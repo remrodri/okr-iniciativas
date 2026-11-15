@@ -31,11 +31,16 @@ const client = createFirebaseClient({
   appName: `lifecycle-${timestamp}`,
 });
 
-const t0 = '2026-11-14T10:00:00.000Z';
-const oneHourLater = '2026-11-14T11:00:00.000Z';
-const afterWindow = '2026-11-15T11:00:00.000Z';
-const oldStart = '2026-11-10T10:00:00.000Z';
-const oldAfterWindow = '2026-11-12T10:00:00.000Z';
+const now = Date.now();
+const asIso = (offsetMillis: number) => new Date(now + offsetMillis).toISOString();
+const hour = 60 * 60 * 1_000;
+const day = 24 * hour;
+
+const t0 = asIso(0);
+const oneHourLater = asIso(hour);
+const afterWindow = asIso(day + hour);
+const oldStart = asIso(-2 * day);
+const oldAfterWindow = asIso(0);
 
 let testEnv: RulesTestEnvironment;
 
