@@ -26,6 +26,7 @@ afterAll(async () => {
 
 describe('panel de participantes en tiempo real', () => {
   it('refleja conexión y avance sin exponer la clave privada', async () => {
+    const now = new Date().toISOString();
     const credential = await client.signInAnonymously();
     const provisioned = await provisionSession({
       firestore: client.firestore,
@@ -36,7 +37,7 @@ describe('panel de participantes en tiempo real', () => {
         expectedParticipants: 2,
         initiativesPerParticipant: 1,
       },
-      now: '2026-11-14T10:00:00.000Z',
+      now,
     });
 
     const received: SessionPanelData[] = [];
@@ -77,7 +78,7 @@ describe('panel de participantes en tiempo real', () => {
       firestore: client.firestore,
       token: participant.token,
       uid: credential.user.uid,
-      now: '2026-11-14T10:00:00.000Z',
+      now,
     });
     await updateDoc(
       doc(
@@ -89,6 +90,7 @@ describe('panel de participantes en tiempo real', () => {
       ),
       {
         connected: true,
+        lastSeenAtMillis: Date.now(),
         progress: {
           brainstormingSubmitted: true,
           refinementSubmitted: false,

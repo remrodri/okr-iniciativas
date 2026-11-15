@@ -119,6 +119,7 @@ export async function provisionSession(
       {
         alias: participant.alias,
         connected: false,
+        lastSeenAtMillis: 0,
         activeUid: null,
         progress: {
           brainstormingSubmitted: false,

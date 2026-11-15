@@ -50,6 +50,9 @@ import {
   reopenRemoteSession,
 } from '@/infrastructure/firebase/sessionLifecycle';
 import { PlaceholderPage } from './PlaceholderPage';
+import { readableFirebaseError, useFirebaseAuthReady } from '@/features/connectivity/useFirebaseAuthReady';
+import { useOnlineStatus } from '@/features/participant/useOnlineStatus';
+import { startFacilitatorPresence } from '@/infrastructure/firebase/presence';
 
 interface FacilitatorLocationState {
   readonly facilitatorToken?: string;
@@ -86,6 +89,18 @@ export function FacilitatorPage() {
   });
   const [error, setError] = useState<string | null>(null);
   const [exportSnapshot, setExportSnapshot] = useState<SessionSnapshot | null>(null);
+  const online = useOnlineStatus();
+  const authReady = useFirebaseAuthReady();
+
+  useEffect(() => {
+    const runtime = getFirebaseRuntime();
+    if (runtime === null || sessionId === undefined || !authReady || !online) return;
+    return startFacilitatorPresence({
+      firestore: runtime.firestore,
+      sessionId,
+      onError: (caught) => setError(readableFirebaseError(caught)),
+    });
+  }, [authReady, online, sessionId]);
 
   useEffect(() => {
     const runtime = getFirebaseRuntime();
@@ -98,13 +113,14 @@ export function FacilitatorPage() {
       return;
     }
 
+    if (!authReady) return;
     return subscribeSessionPanel(
       runtime.firestore,
       sessionId,
       setData,
-      (caught) => setError(caught.message),
+      (caught) => setError(readableFirebaseError(caught)),
     );
-  }, [sessionId]);
+  }, [authReady, sessionId]);
 
   useEffect(() => {
     const runtime = getFirebaseRuntime();
@@ -116,7 +132,7 @@ export function FacilitatorPage() {
 
   useEffect(() => {
     const runtime = getFirebaseRuntime();
-    if (runtime === null || sessionId === undefined) {
+    if (runtime === null || sessionId === undefined || !authReady) {
       return;
     }
 
@@ -124,13 +140,13 @@ export function FacilitatorPage() {
       runtime.firestore,
       sessionId,
       setReview,
-      (caught) => setError(caught.message),
+      (caught) => setError(readableFirebaseError(caught)),
     );
-  }, [sessionId]);
+  }, [authReady, sessionId]);
 
   useEffect(() => {
     const runtime = getFirebaseRuntime();
-    if (runtime === null || sessionId === undefined) {
+    if (runtime === null || sessionId === undefined || !authReady) {
       return;
     }
 
@@ -138,13 +154,13 @@ export function FacilitatorPage() {
       runtime.firestore,
       sessionId,
       setRefinement,
-      (caught) => setError(caught.message),
+      (caught) => setError(readableFirebaseError(caught)),
     );
-  }, [sessionId]);
+  }, [authReady, sessionId]);
 
   useEffect(() => {
     const runtime = getFirebaseRuntime();
-    if (runtime === null || sessionId === undefined) {
+    if (runtime === null || sessionId === undefined || !authReady) {
       return;
     }
 
@@ -152,9 +168,9 @@ export function FacilitatorPage() {
       runtime.firestore,
       sessionId,
       setResults,
-      (caught) => setError(caught.message),
+      (caught) => setError(readableFirebaseError(caught)),
     );
-  }, [sessionId]);
+  }, [authReady, sessionId]);
 
   function publishResults() {
     const runtime = getFirebaseRuntime();
@@ -437,11 +453,20 @@ export function FacilitatorPage() {
 
   return (
     <PlaceholderPage title="Panel del facilitador">
+      {!online ? (
+        <Alert severity="warning" aria-live="assertive">
+          Sin conexión. El panel no recibirá actualizaciones y las acciones de
+          control permanecerán bloqueadas hasta reconectar.
+        </Alert>
+      ) : null}
       {error === null ? null : <Alert severity="error">{error}</Alert>}
       {data === null ? (
         <Typography aria-live="polite">Cargando sesión…</Typography>
       ) : (
-        <>
+        <fieldset
+          disabled={!online}
+          style={{ border: 0, margin: 0, minWidth: 0, padding: 0 }}
+        >
           <FacilitatorPanel
             data={data}
             participantLink={participantLink}
@@ -523,7 +548,7 @@ export function FacilitatorPage() {
               <SharedReportButton snapshot={exportSnapshot} />
             </>
           )}
-        </>
+        </fieldset>
       )}
     </PlaceholderPage>
   );

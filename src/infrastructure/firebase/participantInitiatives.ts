@@ -107,6 +107,8 @@ export async function submitInitiativesRemote(
 
 export interface ParticipantWorkspace {
   readonly stage: SessionStage;
+  readonly facilitatorConnected: boolean;
+  readonly facilitatorLastSeenAtMillis: number | null;
   readonly initiativesPerParticipant: number;
   readonly submitted: boolean;
   readonly refinementSubmitted: boolean;
@@ -145,6 +147,8 @@ export function subscribeParticipantWorkspace(
   onError?: (error: Error) => void,
 ): Unsubscribe {
   let stage: SessionStage | null = null;
+  let facilitatorConnected = false;
+  let facilitatorLastSeenAtMillis: number | null = null;
   let count: number | null = null;
   let submitted: boolean | null = null;
   let refinementSubmitted: boolean | null = null;
@@ -168,6 +172,8 @@ export function subscribeParticipantWorkspace(
     const ownIds = new Set(initiativeIds(participantId, count));
     onData({
       stage,
+      facilitatorConnected,
+      facilitatorLastSeenAtMillis,
       initiativesPerParticipant: count,
       submitted,
       refinementSubmitted,
@@ -189,6 +195,11 @@ export function subscribeParticipantWorkspace(
       const data = snapshot.data();
       if (data === undefined) return;
       stage = data.stage as SessionStage;
+      facilitatorConnected = data.facilitatorConnected === true;
+      facilitatorLastSeenAtMillis =
+        typeof data.facilitatorLastSeenAtMillis === 'number'
+          ? data.facilitatorLastSeenAtMillis
+          : null;
       count = Number(data.initiativesPerParticipant ?? 0);
       finalistCount =
         typeof data.finalistCount === 'number' ? data.finalistCount : null;

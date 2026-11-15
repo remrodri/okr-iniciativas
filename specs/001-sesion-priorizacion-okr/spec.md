@@ -214,6 +214,27 @@ la etapa correspondiente.
 - La evaluación ICE muestra progreso y controles táctiles claros.
 - El facilitador puede operar desde móvil, aunque escritorio es la vista recomendada.
 
+### RF-11 — Presencia, desconexión y recuperación
+
+- Facilitador y participantes deben ver su propio estado de conexión: conectado,
+  sin conexión o reconectando.
+- Cada cliente activo renueva una señal de presencia; después de 90 segundos sin
+  señal, el sistema lo considera desconectado aunque el navegador no haya podido
+  notificar el cierre.
+- El facilitador ve la presencia vigente de cada participante, no un indicador
+  permanente basado únicamente en su ingreso inicial.
+- Los participantes reciben un aviso cuando el facilitador está temporalmente
+  desconectado y pueden continuar preparando actividades que no requieran un
+  cambio de etapa.
+- Al perder conexión, los borradores permanecen en el dispositivo y ningún envío
+  se muestra como confirmado hasta que Firebase lo acepte.
+- Al recuperar conexión, la interfaz sincroniza y reintenta explícitamente los
+  envíos pendientes sin duplicarlos.
+- Las acciones críticas del facilitador se bloquean mientras su navegador esté
+  sin conexión.
+- Al recargar, los listeners esperan la restauración de Firebase Authentication;
+  no deben mostrar errores transitorios de permisos en inglés.
+
 ## 6. Requisitos no funcionales
 
 - La aplicación debe funcionar en versiones actuales de Chrome, Edge, Firefox y Safari.
@@ -244,6 +265,8 @@ la etapa correspondiente.
 8. Un respaldo Excel exportado puede importarse y reconstruir el mismo estado.
 9. Los flujos del participante son utilizables en una pantalla de 360 px sin
    desplazamiento horizontal.
+10. Al cerrar un participante, el panel lo muestra desconectado en un máximo de
+    90 segundos; ambos roles reciben avisos claros al perder y recuperar conexión.
 
 ## 8. Fuera del alcance del MVP
 

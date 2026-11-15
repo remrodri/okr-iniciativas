@@ -160,6 +160,16 @@ desarrollo. Playwright ejecutará los recorridos reales contra Vite y Firebase
 Emulator; axe-core revisará automáticamente problemas críticos de accesibilidad
 en los viewports móvil, tableta y escritorio.
 
+### D-11 — Presencia con heartbeat en Firestore
+
+Se mantendrá la arquitectura Firestore existente. Cada cliente activo escribirá
+`lastSeenAtMillis` periódicamente y la UI considerará vigente una presencia por
+90 segundos. `pagehide` intentará marcar la salida de inmediato, pero el timeout
+será la garantía ante cierres abruptos, pérdida de energía o red. La restauración
+de Authentication se completará antes de crear listeners. Esta decisión evita
+añadir Realtime Database y mantiene el prototipo dentro de la configuración y
+cuota gratuitas actuales.
+
 ## 4. Rutas y experiencias
 
 ```text
@@ -337,6 +347,7 @@ dividen en documentos para evitar contención y límites de tamaño.
 | Persistencia y expiración | RF-08 |
 | Excel | RF-09 |
 | Responsive y accesibilidad | RF-10 y RNF |
+| Presencia y recuperación de red | RF-11, RF-08 |
 
 ## 15. Riesgos y mitigaciones
 

@@ -42,6 +42,8 @@ import {
   type ParticipantWorkspace,
 } from '@/infrastructure/firebase/participantInitiatives';
 import { PlaceholderPage } from './PlaceholderPage';
+import { useFirebaseAuthReady, readableFirebaseError } from '@/features/connectivity/useFirebaseAuthReady';
+import { isPresenceActive, startParticipantPresence } from '@/infrastructure/firebase/presence';
 
 interface ParticipantLocationState {
   readonly identity?: EnteredParticipant;
@@ -64,6 +66,8 @@ export function ParticipantSessionPage() {
   const [workspace, setWorkspace] = useState<ParticipantWorkspace | null>(null);
   const [lastConfirmed, setLastConfirmed] = useState(false);
   const online = useOnlineStatus();
+  const authReady = useFirebaseAuthReady();
+  const [presenceNow, setPresenceNow] = useState(() => Date.now());
   const identity = locationState?.identity;
   const activeSessionId = localState?.sessionId;
   const activeParticipantId = localState?.participantId;
@@ -79,16 +83,39 @@ export function ParticipantSessionPage() {
     if (
       runtime === null ||
       activeSessionId === undefined ||
-      activeParticipantId === undefined
+      activeParticipantId === undefined ||
+      !authReady
     ) return;
     return subscribeParticipantWorkspace(
       runtime.firestore,
       activeSessionId,
       activeParticipantId,
       setWorkspace,
-      (caught) => setError(caught.message),
+      (caught) => setError(readableFirebaseError(caught)),
     );
-  }, [activeParticipantId, activeSessionId]);
+  }, [activeParticipantId, activeSessionId, authReady]);
+
+  useEffect(() => {
+    const runtime = getFirebaseRuntime();
+    if (
+      runtime === null ||
+      !authReady ||
+      !online ||
+      activeSessionId === undefined ||
+      activeParticipantId === undefined
+    ) return;
+    return startParticipantPresence({
+      firestore: runtime.firestore,
+      sessionId: activeSessionId,
+      participantId: activeParticipantId,
+      onError: (caught) => setError(readableFirebaseError(caught)),
+    });
+  }, [activeParticipantId, activeSessionId, authReady, online]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setPresenceNow(Date.now()), 15_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     setLastConfirmed(false);
@@ -585,6 +612,13 @@ export function ParticipantSessionPage() {
       : lastConfirmed || currentStageConfirmed()
         ? 'CONFIRMED'
         : 'IDLE';
+  const facilitatorPresenceKnown =
+    workspace?.facilitatorLastSeenAtMillis !== null &&
+    workspace?.facilitatorLastSeenAtMillis !== undefined;
+  const facilitatorOnline =
+    workspace !== null &&
+    workspace.facilitatorConnected &&
+    isPresenceActive(workspace.facilitatorLastSeenAtMillis, presenceNow);
 
   return (
     <PlaceholderPage title="Sesión de participante">
@@ -612,6 +646,12 @@ export function ParticipantSessionPage() {
             }
             onRetry={retryPending}
           />
+          {facilitatorPresenceKnown && !facilitatorOnline ? (
+            <Alert severity="warning" aria-live="polite">
+              El facilitador está temporalmente desconectado. Puedes continuar
+              preparando tu actividad; los cambios de etapa esperarán su regreso.
+            </Alert>
+          ) : null}
           {workspace === null ? (
             <Typography aria-live="polite">Cargando actividad…</Typography>
           ) : workspace.stage === 'BRAINSTORMING' ||

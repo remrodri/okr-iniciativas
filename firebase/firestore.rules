@@ -181,12 +181,12 @@ service cloud.firestore {
             || getAfter(/databases/$(database)/documents/sessions/$(sessionId)).data.restoring == true
           )
           && request.resource.data.keys().hasOnly([
-            'alias', 'connected', 'activeUid', 'progress',
+            'alias', 'connected', 'lastSeenAtMillis', 'activeUid', 'progress',
           ])
           && !request.resource.data.keys().hasAny(['accessTokenId']);
         allow update: if isActiveParticipantAfter(sessionId, participantId)
           && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['activeUid', 'connected', 'progress'])
+            .hasOnly(['activeUid', 'connected', 'lastSeenAtMillis', 'progress'])
           && request.resource.data.activeUid == request.auth.uid;
         allow delete: if canPurge(sessionId);
       }

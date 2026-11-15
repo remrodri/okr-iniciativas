@@ -105,6 +105,7 @@ export async function claimParticipantAccess(
       transaction.update(participantRef, {
         activeUid: input.uid,
         connected: true,
+        lastSeenAtMillis: Date.parse(input.now),
       });
       if (input.realName !== undefined) {
         transaction.set(

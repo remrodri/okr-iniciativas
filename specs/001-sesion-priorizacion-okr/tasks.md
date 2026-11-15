@@ -291,3 +291,10 @@ ejecutar la suite indicada, marcarla y detenerse.
   Crear matriz final de pruebas, ejecutar suite completa y realizar demo documentada.
   **Depende de:** T50, T51, T52  
   **Hecho cuando:** cada RF tiene evidencia verde y el veredicto final es “spec cumplida”.
+
+- [x] **T54. Implementar presencia y recuperación de conexión.** (RF-08, RF-11)
+  Añadir heartbeat con vencimiento, avisos para ambos roles, bloqueo offline del
+  facilitador y espera de Authentication antes de crear listeners.
+  **Depende de:** T43, T53
+  **Hecho cuando:** pruebas cubren cierre abrupto, vencimiento a 90 segundos,
+  pérdida/recuperación de red y recarga sin errores transitorios de permisos.

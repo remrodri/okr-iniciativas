@@ -7,6 +7,7 @@ import {
 } from 'firebase/firestore';
 
 import type { ParticipantProgress, SessionStage } from '@/domain/types';
+import { isPresenceActive } from './presence';
 
 export interface PanelParticipant {
   readonly participantId: string;
@@ -29,7 +30,9 @@ export function subscribeSessionPanel(
   onError?: (error: Error) => void,
 ): Unsubscribe {
   let session: { publicCode: string; stage: SessionStage } | null = null;
-  let participants: readonly PanelParticipant[] | null = null;
+  let participants:
+    | readonly (PanelParticipant & { readonly lastSeenAtMillis: number | null })[]
+    | null = null;
 
   function emit() {
     if (session === null || participants === null) {
@@ -39,7 +42,12 @@ export function subscribeSessionPanel(
       sessionId,
       publicCode: session.publicCode,
       stage: session.stage,
-      participants,
+      participants: participants.map((participant) => ({
+        ...participant,
+        connected:
+          participant.connected &&
+          isPresenceActive(participant.lastSeenAtMillis),
+      })),
     });
   }
 
@@ -68,6 +76,10 @@ export function subscribeSessionPanel(
           participantId: participant.id,
           alias: String(data.alias ?? ''),
           connected: data.connected === true,
+          lastSeenAtMillis:
+            typeof data.lastSeenAtMillis === 'number'
+              ? data.lastSeenAtMillis
+              : null,
           progress: data.progress as ParticipantProgress,
         };
       });
@@ -76,7 +88,10 @@ export function subscribeSessionPanel(
     onError,
   );
 
+  const presenceTimer = window.setInterval(emit, 15_000);
+
   return () => {
+    window.clearInterval(presenceTimer);
     unsubscribeSession();
     unsubscribeParticipants();
   };
