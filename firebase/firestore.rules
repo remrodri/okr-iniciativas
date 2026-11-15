@@ -1,0 +1,405 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function sessionData(sessionId) {
+      return get(/databases/$(database)/documents/sessions/$(sessionId)).data;
+    }
+
+    function facilitatorAccessId(sessionId) {
+      return get(/databases/$(database)/documents/sessions/$(sessionId)/facilitatorAccess/current).data.accessId;
+    }
+
+    function facilitatorAccessData(sessionId) {
+      return get(/databases/$(database)/documents/access/$(facilitatorAccessId(sessionId))).data;
+    }
+
+    function isFacilitator(sessionId) {
+      let access = facilitatorAccessData(sessionId);
+      return signedIn()
+        && access.sessionId == sessionId
+        && access.role == 'FACILITATOR'
+        && access.participantId == null
+        && access.activeUid == request.auth.uid;
+    }
+
+    function isRestoringCreator(sessionId) {
+      return signedIn()
+        && sessionData(sessionId).restoring == true
+        && sessionData(sessionId).creatorUid == request.auth.uid;
+    }
+
+    function publishIncludesResults(sessionId) {
+      return resource.data.stage != 'EVALUACION_ICE'
+        || request.resource.data.stage != 'RESULTADO_FINAL'
+        || (
+          existsAfter(/databases/$(database)/documents/sessions/$(sessionId)/results/ranking)
+          && getAfter(/databases/$(database)/documents/sessions/$(sessionId)/results/ranking).data.entries is list
+        );
+    }
+
+    function participantAccessData(sessionId, participantId) {
+      return get(/databases/$(database)/documents/access/$(get(/databases/$(database)/documents/sessions/$(sessionId)/accessMap/$(participantId)).data.accessId)).data;
+    }
+
+    function participantAccessDataAfter(sessionId, participantId) {
+      return getAfter(/databases/$(database)/documents/access/$(getAfter(/databases/$(database)/documents/sessions/$(sessionId)/accessMap/$(participantId)).data.accessId)).data;
+    }
+
+    function isRevealed(sessionId) {
+      return sessionData(sessionId).stage == 'RESULTADO_FINAL'
+        || sessionData(sessionId).stage == 'FINALIZADA';
+    }
+
+    function stageIs(sessionId, stage) {
+      return sessionData(sessionId).stage == stage;
+    }
+
+    function isExpired(sessionId) {
+      return sessionData(sessionId).stage == 'FINALIZADA'
+        && sessionData(sessionId).expiresAtMillis is number
+        && sessionData(sessionId).expiresAtMillis <= request.time.toMillis();
+    }
+
+    function isExpiredAfter(sessionId) {
+      return getAfter(/databases/$(database)/documents/sessions/$(sessionId)).data.stage == 'FINALIZADA'
+        && getAfter(/databases/$(database)/documents/sessions/$(sessionId)).data.expiresAtMillis is number
+        && getAfter(/databases/$(database)/documents/sessions/$(sessionId)).data.expiresAtMillis <= request.time.toMillis();
+    }
+
+    function canPurge(sessionId) {
+      return isFacilitator(sessionId) && isExpired(sessionId);
+    }
+
+    function isActiveParticipant(sessionId, participantId) {
+      let access = participantAccessData(sessionId, participantId);
+      return signedIn()
+        && access.sessionId == sessionId
+        && access.role == 'PARTICIPANT'
+        && access.participantId == participantId
+        && access.activeUid == request.auth.uid;
+    }
+
+    function isActiveParticipantAfter(sessionId, participantId) {
+      let access = participantAccessDataAfter(sessionId, participantId);
+      return signedIn()
+        && access.sessionId == sessionId
+        && access.role == 'PARTICIPANT'
+        && access.participantId == participantId
+        && access.activeUid == request.auth.uid;
+    }
+
+    function isInitiativeAuthor(sessionId, initiativeId) {
+      let authorship = get(/databases/$(database)/documents/sessions/$(sessionId)/authorship/$(initiativeId)).data;
+      return signedIn() && (
+        authorship.authorUid == request.auth.uid
+        || (
+          authorship.authorParticipantId is string
+          && get(/databases/$(database)/documents/sessions/$(sessionId)/participants/$(authorship.authorParticipantId)).data.activeUid == request.auth.uid
+        )
+      );
+    }
+
+    match /access/{tokenId} {
+      allow get: if signedIn()
+        && (!isExpired(resource.data.sessionId) || canPurge(resource.data.sessionId));
+      allow create: if signedIn()
+        && request.resource.data.sessionId is string
+        && !exists(/databases/$(database)/documents/sessions/$(request.resource.data.sessionId))
+        && request.resource.data.role in ['FACILITATOR', 'PARTICIPANT']
+        && request.resource.data.keys().hasOnly([
+          'sessionId', 'role', 'participantId', 'activeUid', 'createdAt',
+        ])
+        && request.resource.data.activeUid == null
+        && getAfter(/databases/$(database)/documents/sessions/$(request.resource.data.sessionId)).data.creatorUid == request.auth.uid;
+      allow update: if signedIn()
+        && !isExpired(resource.data.sessionId)
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['activeUid', 'claimedAt'])
+        && request.resource.data.activeUid == request.auth.uid
+        && (
+          (
+            resource.data.role == 'FACILITATOR'
+            && resource.data.participantId == null
+            && facilitatorAccessId(resource.data.sessionId) == tokenId
+          ) || (
+            resource.data.role == 'PARTICIPANT'
+            && resource.data.participantId is string
+            && getAfter(/databases/$(database)/documents/sessions/$(resource.data.sessionId)/participants/$(resource.data.participantId)).data.activeUid == request.auth.uid
+            && getAfter(/databases/$(database)/documents/sessions/$(resource.data.sessionId)/accessMap/$(resource.data.participantId)).data.accessId == tokenId
+          )
+        );
+      allow list: if false;
+      allow delete: if canPurge(resource.data.sessionId);
+    }
+
+    match /healthcheck/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
+    match /sessionCodes/{publicCode} {
+      allow get: if signedIn()
+        && (!isExpired(resource.data.sessionId) || canPurge(resource.data.sessionId));
+      allow create: if signedIn()
+        && request.resource.data.sessionId is string
+        && !exists(/databases/$(database)/documents/sessions/$(request.resource.data.sessionId))
+        && getAfter(/databases/$(database)/documents/sessions/$(request.resource.data.sessionId)).data.creatorUid == request.auth.uid;
+      allow list, update: if false;
+      allow delete: if canPurge(resource.data.sessionId);
+    }
+
+    match /sessions/{sessionId} {
+      allow read: if signedIn()
+        && (!isExpired(sessionId) || canPurge(sessionId));
+      allow create: if signedIn()
+        && request.resource.data.creatorUid == request.auth.uid
+        && !request.resource.data.keys().hasAny(['facilitatorAccessId']);
+      allow update: if (
+          isFacilitator(sessionId)
+          && !isExpired(sessionId)
+          && publishIncludesResults(sessionId)
+        ) || (
+          isRestoringCreator(sessionId)
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['restoring'])
+          && request.resource.data.restoring == false
+        );
+      allow delete: if canPurge(sessionId);
+
+      match /participants/{participantId} {
+        allow read: if signedIn()
+          && (!isExpired(sessionId) || canPurge(sessionId));
+        allow create: if signedIn()
+          && !exists(/databases/$(database)/documents/sessions/$(sessionId))
+          && getAfter(/databases/$(database)/documents/sessions/$(sessionId)).data.creatorUid == request.auth.uid
+          && (
+            getAfter(/databases/$(database)/documents/sessions/$(sessionId)).data.stage == 'CONFIGURACION'
+            || getAfter(/databases/$(database)/documents/sessions/$(sessionId)).data.restoring == true
+          )
+          && request.resource.data.keys().hasOnly([
+            'alias', 'connected', 'activeUid', 'progress',
+          ])
+          && !request.resource.data.keys().hasAny(['accessTokenId']);
+        allow update: if isActiveParticipantAfter(sessionId, participantId)
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['activeUid', 'connected', 'progress'])
+          && request.resource.data.activeUid == request.auth.uid;
+        allow delete: if canPurge(sessionId);
+      }
+
+      match /initiatives/{initiativeId} {
+        allow read: if signedIn() && (!isExpired(sessionId) || canPurge(sessionId));
+        allow create: if isRestoringCreator(sessionId) || (
+          signedIn()
+          && !isExpired(sessionId)
+          && stageIs(sessionId, 'BRAINSTORMING')
+          && request.resource.data.keys().hasOnly([
+            'id', 'text', 'status', 'mergedIntoId', 'revision',
+            'createdAt', 'updatedAt',
+          ])
+        );
+        allow update: if signedIn() && !isExpired(sessionId) && (
+          (
+            stageIs(sessionId, 'BRAINSTORMING')
+            && isInitiativeAuthor(sessionId, initiativeId)
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['text', 'revision', 'updatedAt'])
+          ) || (
+            isFacilitator(sessionId)
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly([
+                'text', 'status', 'mergedIntoId', 'revision', 'updatedAt',
+              ])
+          )
+        );
+        allow delete: if canPurge(sessionId);
+      }
+
+      match /authorship/{initiativeId} {
+        allow read: if signedIn() && ((isRevealed(sessionId) && !isExpired(sessionId)) || canPurge(sessionId));
+        allow create: if isRestoringCreator(sessionId) || (
+          signedIn()
+          && !isExpired(sessionId)
+          && stageIs(sessionId, 'BRAINSTORMING')
+          && request.resource.data.authorUid == request.auth.uid
+          && request.resource.data.keys().hasOnly([
+            'authorUid', 'originals', 'createdAt',
+          ])
+        );
+        allow update: if false;
+        allow delete: if canPurge(sessionId);
+      }
+
+      match /clarifications/{clarificationId} {
+        allow read: if signedIn() && (!isExpired(sessionId) || canPurge(sessionId));
+        allow create: if isRestoringCreator(sessionId) || (isFacilitator(sessionId)
+          && !isExpired(sessionId)
+          && stageIs(sessionId, 'REVISION')
+          && request.resource.data.keys().hasOnly([
+            'id', 'initiativeId', 'message', 'status', 'createdAt',
+          ]));
+        allow update: if signedIn()
+          && !isExpired(sessionId)
+          && stageIs(sessionId, 'REVISION')
+          && isInitiativeAuthor(sessionId, resource.data.initiativeId)
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'responseText'])
+          && resource.data.status == 'OPEN'
+          && request.resource.data.status == 'RESOLVED'
+          && request.resource.data.responseText is string;
+        allow delete: if canPurge(sessionId);
+      }
+
+      match /originals/{originalId} {
+        allow read: if signedIn() && ((isRevealed(sessionId) && !isExpired(sessionId)) || canPurge(sessionId));
+        allow create, update: if isRestoringCreator(sessionId)
+          || (signedIn() && !isExpired(sessionId));
+        allow delete: if canPurge(sessionId);
+      }
+
+      match /ballots/{ballotId} {
+        allow get: if signedIn()
+          && !isExpired(sessionId)
+          && isActiveParticipant(sessionId, resource.data.participantId);
+        allow create: if isRestoringCreator(sessionId) || (signedIn()
+          && !isExpired(sessionId)
+          && isActiveParticipant(sessionId, request.resource.data.participantId)
+          && request.resource.data.keys().hasOnly([
+            'id', 'participantId', 'round', 'selection',
+            'submissionId', 'submittedAt',
+          ])
+          && request.resource.data.selection is list
+          && request.resource.data.selection.size() > 0
+          && request.resource.data.selection.size() <= 40
+          && request.resource.data.selection.toSet().size()
+            == request.resource.data.selection.size()
+          && ballotId == request.resource.data.participantId
+            + '_' + request.resource.data.round
+          && (
+            (
+              request.resource.data.round == 'REFINEMENT'
+              && stageIs(sessionId, 'DEPURACION')
+              && request.resource.data.selection.size()
+                == sessionData(sessionId).finalistCount
+            ) || (
+              request.resource.data.round == 'TIEBREAK'
+              && stageIs(sessionId, 'DESEMPATE_DEPURACION')
+              && request.resource.data.selection.size()
+                == sessionData(sessionId).tieBreak.slotsRemaining
+            )
+          ));
+        allow update: if signedIn()
+          && !isExpired(sessionId)
+          && isActiveParticipant(sessionId, resource.data.participantId)
+          && request.resource.data.participantId == resource.data.participantId
+          && request.resource.data.round == resource.data.round
+          && request.resource.data.submissionId == resource.data.submissionId
+          && request.resource.data.selection == resource.data.selection;
+        allow list: if (isFacilitator(sessionId) && !isExpired(sessionId))
+          || canPurge(sessionId);
+        allow delete: if canPurge(sessionId);
+      }
+
+      match /iceRatings/{ratingId} {
+        allow get: if signedIn()
+          && !isExpired(sessionId)
+          && isActiveParticipant(sessionId, resource.data.participantId);
+        allow create: if isRestoringCreator(sessionId) || (signedIn()
+          && !isExpired(sessionId)
+          && stageIs(sessionId, 'EVALUACION_ICE')
+          && isActiveParticipant(sessionId, request.resource.data.participantId)
+          && ratingId == request.resource.data.participantId
+          && request.resource.data.keys().hasOnly([
+            'id', 'participantId', 'ratings',
+            'submissionId', 'submittedAt',
+          ])
+          && request.resource.data.ratings is map
+          && request.resource.data.ratings.size()
+            == sessionData(sessionId).finalistIds.size()
+          && request.resource.data.ratings.keys()
+            .hasAll(sessionData(sessionId).finalistIds));
+        allow update: if signedIn()
+          && !isExpired(sessionId)
+          && stageIs(sessionId, 'EVALUACION_ICE')
+          && isActiveParticipant(sessionId, resource.data.participantId)
+          && request.resource.data.participantId == resource.data.participantId
+          && request.resource.data.submissionId == resource.data.submissionId
+          && request.resource.data.ratings == resource.data.ratings;
+        allow list: if (signedIn()
+          && !isExpired(sessionId)
+          && isFacilitator(sessionId)
+          && (isRevealed(sessionId) || stageIs(sessionId, 'EVALUACION_ICE')))
+          || canPurge(sessionId);
+        allow delete: if canPurge(sessionId);
+      }
+
+      match /results/{resultId} {
+        allow read: if signedIn() && ((isRevealed(sessionId) && !isExpired(sessionId)) || canPurge(sessionId));
+        allow create, update: if isRestoringCreator(sessionId) || (isFacilitator(sessionId)
+          && !isExpired(sessionId)
+          && getAfter(/databases/$(database)/documents/sessions/$(sessionId)).data.stage == 'RESULTADO_FINAL');
+        allow delete: if canPurge(sessionId);
+      }
+
+      match /audit/{auditId} {
+        allow read: if signedIn() && (!isExpired(sessionId) || canPurge(sessionId));
+        allow create: if isRestoringCreator(sessionId)
+          || (signedIn() && !isExpiredAfter(sessionId));
+        allow update: if false;
+        allow delete: if canPurge(sessionId);
+      }
+
+      match /private/{privateId} {
+        allow read: if signedIn() && ((isRevealed(sessionId) && !isExpired(sessionId)) || canPurge(sessionId));
+        allow create, update: if isRestoringCreator(sessionId) || (!isExpired(sessionId)
+          && request.resource.data.keys().hasOnly(['realName', 'updatedAt'])
+          && request.resource.data.realName is string
+          && request.resource.data.realName.size() > 0
+          && (
+            isFacilitator(sessionId)
+            || isActiveParticipantAfter(sessionId, privateId)
+          ));
+        allow delete: if canPurge(sessionId);
+      }
+
+      match /facilitatorAccess/{accessId} {
+        allow get: if canPurge(sessionId);
+        allow list: if canPurge(sessionId);
+        allow create: if signedIn()
+          && accessId == 'current'
+          && !exists(/databases/$(database)/documents/sessions/$(sessionId))
+          && request.resource.data.keys().hasOnly(['accessId'])
+          && getAfter(/databases/$(database)/documents/sessions/$(sessionId)).data.creatorUid == request.auth.uid
+          && getAfter(/databases/$(database)/documents/access/$(request.resource.data.accessId)).data.sessionId == sessionId
+          && getAfter(/databases/$(database)/documents/access/$(request.resource.data.accessId)).data.role == 'FACILITATOR'
+          && getAfter(/databases/$(database)/documents/access/$(request.resource.data.accessId)).data.participantId == null;
+        allow update: if false;
+        allow delete: if canPurge(sessionId);
+      }
+
+      match /accessMap/{participantId} {
+        allow get: if false;
+        allow list: if canPurge(sessionId);
+        allow create: if signedIn()
+          && !exists(/databases/$(database)/documents/sessions/$(sessionId))
+          && request.resource.data.keys().hasOnly(['accessId'])
+          && getAfter(/databases/$(database)/documents/sessions/$(sessionId)).data.creatorUid == request.auth.uid
+          && getAfter(/databases/$(database)/documents/access/$(request.resource.data.accessId)).data.sessionId == sessionId
+          && getAfter(/databases/$(database)/documents/access/$(request.resource.data.accessId)).data.role == 'PARTICIPANT'
+          && getAfter(/databases/$(database)/documents/access/$(request.resource.data.accessId)).data.participantId == participantId;
+        allow update: if false;
+        allow delete: if canPurge(sessionId);
+      }
+
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

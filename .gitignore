@@ -10,12 +10,14 @@ dist-ssr/
 .env
 .env.*
 !.env.example
+!.env.e2e
 
 # Tests and coverage
 coverage/
 playwright-report/
 test-results/
 blob-report/
+.playwright-mcp/
 
 # Firebase local state and emulators
 .firebase/

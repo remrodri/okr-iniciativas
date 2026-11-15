@@ -56,6 +56,14 @@ explícitamente la spec o la constitución.
 - Todos los controles tienen nombre accesible, foco visible y uso por teclado.
 - El estado no se comunica solo por color.
 - Acciones destructivas y cierres incompletos requieren confirmación.
+- La evidencia Playwright incluye 360x800, escritorio y consola sin errores
+  relacionados con el cambio.
+
+## MCP esperados
+
+- Context7: documentación actual de las librerías aprobadas cuando sea relevante.
+- Playwright: validación visual, responsive, interacción y consola.
+- MongoDB: prohibido en este proyecto; cualquier uso es un cambio fuera de alcance.
 
 ## Formato de hallazgo
 

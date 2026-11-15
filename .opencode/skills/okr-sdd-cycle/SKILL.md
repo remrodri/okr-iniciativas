@@ -62,6 +62,27 @@ tarea contradice la spec, detente y explica el bloqueo; no improvises.
 - Si el repositorio contiene cambios previos, distingue el diff de TNN antes de
   auditar y no atribuyas cambios ajenos a la tarea.
 
+## Uso de MCP
+
+Los MCP complementan las herramientas del proyecto; no sustituyen las pruebas ni
+los artefactos SDD.
+
+- **Context7:** úsalo antes de adoptar o modificar APIs de React, Vite, Material
+  UI, Firebase, Playwright o ExcelJS cuando la respuesta dependa de la versión
+  actual. Prefiere documentación oficial devuelta por Context7 y registra en el
+  resumen cualquier decisión técnica que haya cambiado por esa consulta.
+- **Playwright MCP:** úsalo en tareas que creen o cambien interfaz y durante las
+  auditorías responsive. Comprueba al menos 360x800 y un viewport de escritorio;
+  inspecciona errores de consola y confirma visualmente el flujo afectado.
+- **MongoDB MCP:** no lo uses en este repositorio. La spec y el plan aprobaron
+  Cloud Firestore; MongoDB pertenece a otros proyectos y no debe influir en el
+  modelo de datos ni añadir dependencias.
+- No invoques un MCP solo porque está conectado. Úsalo únicamente cuando aporte
+  evidencia necesaria para la tarea actual.
+- Si un MCP relevante no está disponible, continúa con las herramientas locales
+  cuando permitan la misma verificación; informa la limitación sin inventar
+  resultados.
+
 ## Continuidad del proyecto
 
 En `full` o `resume`:
@@ -159,7 +180,9 @@ Debe ser de solo lectura y partir del diff final, no del informe del build:
 2. vuelve a comprobar RF y “Hecho cuando”;
 3. ejecuta la suite completa disponible, lint y build;
 4. revisa que no haya archivos generados, secretos ni cambios fuera de alcance;
-5. emite uno de estos veredictos exactos:
+5. si la tarea afecta interfaz, repite la comprobación Playwright en 360x800 y
+   escritorio, incluyendo errores de consola;
+6. emite uno de estos veredictos exactos:
    - `AUDITORÍA FINAL: APROBADA`
    - `AUDITORÍA FINAL: RECHAZADA`
 

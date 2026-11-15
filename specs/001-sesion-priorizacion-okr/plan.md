@@ -123,6 +123,43 @@ restaurar toda la sesión en un único archivo.
   acción manual explícita.
 - No se usa TTL de Firestore porque sus eliminaciones requieren facturación.
 
+### D-08 — QR local para enlaces de acceso
+
+Se usará `qrcode` (MIT) para generar los QR de los enlaces público y privado
+directamente en el navegador, sin enviar tokens a servicios externos.
+
+- El QR público codifica solo el enlace con `#/participar/:publicCode`.
+- El QR privado codifica la clave de recuperación y se muestra separado.
+- Si la generación falla, se conserva el enlace textual como alternativa.
+
+### D-09 — Credenciales no enumerables y acceso atómico (T36A)
+
+La proyección pública de la sesión no contiene identificadores de acceso. Solo
+existen en documentos `access/{opaqueTokenId}` no enumerables y en mapas privados
+usados por las reglas.
+
+- La sesión guarda `creatorUid`, no `facilitatorAccessId`.
+- Los documentos de participante guardan alias, progreso y `activeUid`, pero no
+  `accessTokenId`.
+- `sessions/{id}/facilitatorAccess/current` y `sessions/{id}/accessMap/{participantId}`
+  relacionan la sesión con sus credenciales y no son legibles por clientes.
+- Reclamar o recuperar un token actualiza en una transacción el `activeUid` del
+  acceso y el del participante; la identidad anterior pierde permisos.
+- Las reglas usan `getAfter()` para validar que la publicación escribe `results`
+  y cambia la sesión a `RESULTADO_FINAL` en la misma operación atómica.
+- El facilitador puede listar `iceRatings` durante `EVALUACION_ICE` solo para
+  calcular agregados; la interfaz nunca muestra calificaciones individuales.
+- Al expirar, se deniega la lectura de `results`, `private`, `authorship`,
+  `originals`, `ballots` e `iceRatings`; el facilitador conserva solo el listado
+  necesario para la limpieza diferida.
+
+### D-10 — Validación E2E y accesibilidad
+
+Se usarán `@playwright/test` y `@axe-core/playwright` como dependencias de
+desarrollo. Playwright ejecutará los recorridos reales contra Vite y Firebase
+Emulator; axe-core revisará automáticamente problemas críticos de accesibilidad
+en los viewports móvil, tableta y escritorio.
+
 ## 4. Rutas y experiencias
 
 ```text
@@ -184,6 +221,8 @@ FINALIZADA -> RESULTADO_FINAL (reapertura dentro de 24 h)
 ```text
 sessions/{sessionId}                     proyección pública y estado
 sessions/{sessionId}/participants/{id}   alias, progreso y uid activo
+sessions/{sessionId}/facilitatorAccess/current  vínculo privado al token
+sessions/{sessionId}/accessMap/{id}      vínculo privado participante -> token
 sessions/{sessionId}/private/{id}        nombres y vínculos privados
 sessions/{sessionId}/initiatives/{id}    texto vigente y metadatos públicos
 sessions/{sessionId}/originals/{id}      propuestas originales privadas
@@ -205,9 +244,11 @@ dividen en documentos para evitar contención y límites de tamaño.
 - No permitir `list` sobre credenciales ni datos privados.
 - Participante: lee la proyección de su sesión, escribe solo sus iniciativas,
   aclaraciones y un ballot/evaluación propios en la etapa habilitada.
-- Facilitador: cambia configuración y etapa; no puede leer ballots ni ICE mientras
-  la etapa esté abierta desde la interfaz y las reglas de datos.
-- Resultados agregados se publican solo después del cierre.
+- Facilitador: cambia configuración y etapa; no puede leer ballots individuales.
+  Durante `EVALUACION_ICE` puede listar `iceRatings` solo para calcular el ranking;
+  la interfaz no muestra calificaciones individuales.
+- Resultados agregados se publican en la misma operación atómica que el cambio a
+  `RESULTADO_FINAL`.
 - Nombres y autoría se revelan únicamente en resultado final y exportaciones.
 - Validación de tipos, longitudes, rangos, campos permitidos y estado actual tanto
   en dominio como en reglas de Firestore.
@@ -318,6 +359,7 @@ dividen en documentos para evitar contención y límites de tamaño.
 - Despliegue oficial de Vite en GitHub Pages.
 - Breakpoints y enfoque mobile-first de Material UI.
 - ExcelJS para lectura/escritura `.xlsx` en navegador.
+- `qrcode` para generar QR de acceso en el navegador.
 
 ## 17. Condición para pasar a tareas
 
