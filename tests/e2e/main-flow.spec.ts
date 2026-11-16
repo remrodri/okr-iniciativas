@@ -37,13 +37,15 @@ test('flujo 6×5 → 15 → desempate → ICE → ranking', async ({ page, brows
   await expect(page.getByRole('heading', { name: 'Panel del facilitador' })).toBeVisible();
 
   const publicCode = (await page.getByText(/^[A-Z2-9]{8}$/).first().textContent())!;
+  await page.getByRole('button', { name: 'Accesos personales' }).click();
   const allTokens = await page.getByText(/^[a-f0-9]{64}$/).allTextContents();
-  expect(allTokens.length).toBeGreaterThanOrEqual(7);
+  expect(allTokens.length).toBeGreaterThanOrEqual(6);
   const participantTokens = allTokens.slice(0, 6);
 
+  await page.getByRole('button', { name: 'Control de etapa' }).click();
   await page.getByRole('button', { name: 'Abrir sala de espera' }).click();
   await page.getByRole('button', { name: 'Abrir brainstorming' }).click();
-  await expect(page.getByText('Etapa actual: BRAINSTORMING')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Cerrar brainstorming y revisar' })).toBeVisible();
 
   const contexts = await Promise.all(participantTokens.map(() => browser.newContext()));
   const participants = await Promise.all(
@@ -54,6 +56,9 @@ test('flujo 6×5 → 15 → desempate → ICE → ranking', async ({ page, brows
 
   await page.getByRole('button', { name: 'Cerrar brainstorming y revisar' }).click();
   await expect(page.getByText(/Revisión ciega: la autoría permanece oculta/)).toBeVisible();
+  await expect(
+    page.getByText('Hay 30 iniciativas disponibles después de la revisión.'),
+  ).toBeVisible({ timeout: 30_000 });
   await page.getByLabel('Cantidad de finalistas (N)').fill('15');
   await page.getByRole('button', { name: 'Abrir depuración' }).click();
 

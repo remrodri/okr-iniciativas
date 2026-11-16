@@ -30,8 +30,10 @@ test('recupera borrador, reintenta y cambia de dispositivo sin duplicar particip
   await page.getByLabel('Iniciativas por participante').fill('1');
   await page.getByRole('button', { name: 'Crear sesión' }).click();
   const publicCode = (await page.getByText(/^[A-Z2-9]{8}$/).first().textContent())!;
+  await page.getByRole('button', { name: 'Accesos personales' }).click();
   const tokens = await page.getByText(/^[a-f0-9]{64}$/).allTextContents();
   const participantToken = tokens[0]!;
+  await page.getByRole('button', { name: 'Control de etapa' }).click();
   await page.getByRole('button', { name: 'Abrir sala de espera' }).click();
   await page.getByRole('button', { name: 'Abrir brainstorming' }).click();
 
@@ -60,6 +62,7 @@ test('recupera borrador, reintenta y cambia de dispositivo sin duplicar particip
   await recovered.getByLabel('Tu nombre real').fill('Persona recuperada');
   await recovered.getByRole('button', { name: 'Ingresar' }).click();
   await expect(recovered.getByText('Envío confirmado', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Participantes' }).click();
   await expect(page.getByText('Iniciativas enviadas')).toHaveCount(1);
   await firstContext.close(); await secondContext.close();
 });
