@@ -298,3 +298,10 @@ ejecutar la suite indicada, marcarla y detenerse.
   **Depende de:** T43, T53
   **Hecho cuando:** pruebas cubren cierre abrupto, vencimiento a 90 segundos,
   pérdida/recuperación de red y recarga sin errores transitorios de permisos.
+
+- [x] **T55. Reorganizar el panel del facilitador con navegación lateral.** (RF-10)
+  Separar acceso público, accesos personales, participantes, recuperación y
+  flujo de etapa mediante un drawer responsive sin reiniciar listeners remotos.
+  **Depende de:** T54
+  **Hecho cuando:** escritorio ofrece navegación contraíble, móvil usa drawer
+  temporal y las cinco secciones conservan su funcionalidad y accesibilidad.

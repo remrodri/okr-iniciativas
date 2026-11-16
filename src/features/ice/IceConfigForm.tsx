@@ -77,7 +77,17 @@ export function IceConfigForm({
   }
 
   return (
-    <Paper variant="outlined" sx={{ p: 2 }}>
+    <Paper
+      variant="outlined"
+      sx={{
+        p: 2,
+        borderRadius: "12px",
+        // overflowY: "auto",
+        background: "rgba(250, 250, 250, 0.71)",
+        border: "1px solid rgba(250, 250, 250,1)",
+        height: {lg: "25.6rem", xl: "25.7rem" },
+      }}
+    >
       <Stack spacing={2}>
         <Typography component="h2" variant="h2">
           Configuración ICE
@@ -103,7 +113,7 @@ export function IceConfigForm({
           />
         </RadioGroup>
 
-        {method === 'WEIGHTED' ? (
+        {method === "WEIGHTED" ? (
           <Stack spacing={2}>
             <TextField
               label="Peso de Impacto"
@@ -130,7 +140,9 @@ export function IceConfigForm({
               slotProps={{ htmlInput: { min: 0, step: 0.0001 } }}
             />
             <Typography
-              color={Math.abs(total - 100) < 1e-9 ? 'success.main' : 'error.main'}
+              color={
+                Math.abs(total - 100) < 1e-9 ? "success.main" : "error.main"
+              }
             >
               Total: {total} %
             </Typography>

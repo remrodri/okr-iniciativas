@@ -1,14 +1,14 @@
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-import { useState } from 'react';
+import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
+import { useState } from "react";
 
-import { LIMITS } from '@/domain/limits';
-import type { ClarificationRequest } from '@/domain/types';
+import { LIMITS } from "@/domain/limits";
+import type { ClarificationRequest } from "@/domain/types";
 
 interface InitiativeCaptureProps {
   readonly count: number;
@@ -34,7 +34,7 @@ export function InitiativeCapture({
   onRespond,
 }: InitiativeCaptureProps) {
   const [drafts, setDrafts] = useState(() =>
-    Array.from({ length: count }, (_, index) => initialDrafts[index] ?? ''),
+    Array.from({ length: count }, (_, index) => initialDrafts[index] ?? ""),
   );
   const [reviewing, setReviewing] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -49,7 +49,10 @@ export function InitiativeCapture({
   }
 
   function review() {
-    if (drafts.length !== count || drafts.some((draft) => draft.trim() === '')) {
+    if (
+      drafts.length !== count ||
+      drafts.some((draft) => draft.trim() === "")
+    ) {
       setValidationError(`Completa las ${count} iniciativas.`);
       return;
     }
@@ -73,7 +76,7 @@ export function InitiativeCapture({
           <Paper key={clarification.id} variant="outlined" sx={{ p: 2 }}>
             <Stack spacing={1.5}>
               <Typography>{clarification.message}</Typography>
-              {clarification.status === 'RESOLVED' ? (
+              {clarification.status === "RESOLVED" ? (
                 <Alert severity="success">
                   Respuesta enviada: {clarification.responseText}
                 </Alert>
@@ -81,7 +84,7 @@ export function InitiativeCapture({
                 <>
                   <TextField
                     label="Respuesta a la aclaración"
-                    value={responses[clarification.id] ?? ''}
+                    value={responses[clarification.id] ?? ""}
                     onChange={(event) =>
                       setResponses((current) => ({
                         ...current,
@@ -98,12 +101,12 @@ export function InitiativeCapture({
                     variant="contained"
                     disabled={
                       busy ||
-                      (responses[clarification.id] ?? '').trim().length === 0
+                      (responses[clarification.id] ?? "").trim().length === 0
                     }
                     onClick={() =>
                       onRespond(
                         clarification.id,
-                        (responses[clarification.id] ?? '').trim(),
+                        (responses[clarification.id] ?? "").trim(),
                       )
                     }
                   >
@@ -120,7 +123,18 @@ export function InitiativeCapture({
 
   if (reviewing) {
     return (
-      <Stack spacing={2}>
+      <Stack
+        spacing={2}
+        sx={{
+          // height: { md: "36.5rem", lg: "36.4rem", xl: "49.9rem" },
+          borderRadius: "12px",
+          overflowY: "auto",
+          background: "rgba(250, 250, 250, 0.71)",
+          border: "1px solid rgba(250, 250, 250,1)",
+          p: 2,
+          color: "black",
+        }}
+      >
         <Typography component="h2" variant="h2">
           Revisión antes de enviar
         </Typography>
@@ -143,17 +157,28 @@ export function InitiativeCapture({
           disabled={busy}
           onClick={() => onSubmit(drafts.map((draft) => draft.trim()))}
         >
-          {busy ? 'Enviando…' : 'Confirmar envío'}
+          {busy ? "Enviando…" : "Confirmar envío"}
         </Button>
       </Stack>
     );
   }
 
   return (
-    <Stack spacing={2}>
+    <Stack
+      spacing={2}
+      sx={{
+        // height: { md: "36.5rem", lg: "36.4rem", xl: "49.9rem" },
+        borderRadius: "12px",
+        overflowY: "auto",
+        background: "rgba(250, 250, 250, 0.71)",
+        border: "1px solid rgba(250, 250, 250,1)",
+        padding: 2,
+        color: "black",
+      }}
+    >
       <Typography>
-        Redacta exactamente {count} {count === 1 ? 'iniciativa' : 'iniciativas'}.
-        El borrador se guarda automáticamente en este dispositivo.
+        Redacta exactamente {count} {count === 1 ? "iniciativa" : "iniciativas"}
+        . El borrador se guarda automáticamente en este dispositivo.
       </Typography>
       {drafts.map((draft, index) => (
         <TextField

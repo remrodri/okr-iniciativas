@@ -1,62 +1,69 @@
-import Alert from '@mui/material/Alert';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import { useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import Alert from "@mui/material/Alert";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import {
   ParticipantAccessForm,
   type ParticipantAccessValues,
-} from '@/features/participant/ParticipantAccessForm';
-import { InitiativeCapture } from '@/features/participant/InitiativeCapture';
+} from "@/features/participant/ParticipantAccessForm";
+import { InitiativeCapture } from "@/features/participant/InitiativeCapture";
 import {
   IceEvaluationStepper,
   type IceDraftRatings,
-} from '@/features/participant/IceEvaluationStepper';
-import { RefinementBallotForm } from '@/features/participant/RefinementBallotForm';
+} from "@/features/participant/IceEvaluationStepper";
+import { RefinementBallotForm } from "@/features/participant/RefinementBallotForm";
 import {
   ParticipantSyncStatus,
   type ParticipantSyncState,
-} from '@/features/participant/ParticipantSyncStatus';
-import { TieBreakBallotForm } from '@/features/participant/TieBreakBallotForm';
-import { useOnlineStatus } from '@/features/participant/useOnlineStatus';
+} from "@/features/participant/ParticipantSyncStatus";
+import { TieBreakBallotForm } from "@/features/participant/TieBreakBallotForm";
+import { useOnlineStatus } from "@/features/participant/useOnlineStatus";
 import {
   createLocalParticipantStore,
   type ParticipantLocalState,
-} from '@/infrastructure/browser-storage/localParticipantStore';
+} from "@/infrastructure/browser-storage/localParticipantStore";
 import {
   enterParticipantSession,
   type EnteredParticipant,
-} from '@/infrastructure/firebase/participantEntry';
-import { getFirebaseRuntime } from '@/infrastructure/firebase/runtime';
+} from "@/infrastructure/firebase/participantEntry";
+import { getFirebaseRuntime } from "@/infrastructure/firebase/runtime";
 import {
   submitRefinementBallotRemote,
   submitTieBreakBallotRemote,
-} from '@/infrastructure/firebase/participantBallot';
-import { submitIceEvaluationRemote } from '@/infrastructure/firebase/participantIce';
+} from "@/infrastructure/firebase/participantBallot";
+import { submitIceEvaluationRemote } from "@/infrastructure/firebase/participantIce";
 import {
   respondToClarificationRemote,
   submitInitiativesRemote,
   subscribeParticipantWorkspace,
   type ParticipantWorkspace,
-} from '@/infrastructure/firebase/participantInitiatives';
-import { PlaceholderPage } from './PlaceholderPage';
-import { useFirebaseAuthReady, readableFirebaseError } from '@/features/connectivity/useFirebaseAuthReady';
-import { isPresenceActive, startParticipantPresence } from '@/infrastructure/firebase/presence';
+} from "@/infrastructure/firebase/participantInitiatives";
+import { PlaceholderPage } from "./PlaceholderPage";
+import {
+  useFirebaseAuthReady,
+  readableFirebaseError,
+} from "@/features/connectivity/useFirebaseAuthReady";
+import {
+  isPresenceActive,
+  startParticipantPresence,
+} from "@/infrastructure/firebase/presence";
+import { Box } from "@mui/material";
 
 interface ParticipantLocationState {
   readonly identity?: EnteredParticipant;
 }
 
 export function ParticipantSessionPage() {
-  const { sessionId: routeValue = '', token: routeToken } = useParams<{
+  const { sessionId: routeValue = "", token: routeToken } = useParams<{
     sessionId: string;
     token?: string;
   }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const initialToken = useRef(routeToken ?? '');
+  const initialToken = useRef(routeToken ?? "");
   const locationState = location.state as ParticipantLocationState | null;
   const [localState, setLocalState] = useState<ParticipantLocalState | null>(
     () => createLocalParticipantStore().load(routeValue),
@@ -75,7 +82,7 @@ export function ParticipantSessionPage() {
   useEffect(() => {
     if (routeToken === undefined) return;
     const cleanUrl = `${window.location.pathname}${window.location.search}#/participar/${routeValue}`;
-    window.history.replaceState(null, '', cleanUrl);
+    window.history.replaceState(null, "", cleanUrl);
   }, [routeToken, routeValue]);
 
   useEffect(() => {
@@ -85,7 +92,8 @@ export function ParticipantSessionPage() {
       activeSessionId === undefined ||
       activeParticipantId === undefined ||
       !authReady
-    ) return;
+    )
+      return;
     return subscribeParticipantWorkspace(
       runtime.firestore,
       activeSessionId,
@@ -103,7 +111,8 @@ export function ParticipantSessionPage() {
       !online ||
       activeSessionId === undefined ||
       activeParticipantId === undefined
-    ) return;
+    )
+      return;
     return startParticipantPresence({
       firestore: runtime.firestore,
       sessionId: activeSessionId,
@@ -125,7 +134,7 @@ export function ParticipantSessionPage() {
   async function enter(values: ParticipantAccessValues) {
     const runtime = getFirebaseRuntime();
     if (runtime === null) {
-      setError('Firebase no está configurado en este entorno.');
+      setError("Firebase no está configurado en este entorno.");
       return;
     }
     setBusy(true);
@@ -143,7 +152,7 @@ export function ParticipantSessionPage() {
         participantId: entered.participantId,
         accessTokenId: entered.accessTokenId,
         alias: entered.alias,
-        draft: '',
+        draft: "",
       };
       createLocalParticipantStore().save(stored);
       setLocalState(stored);
@@ -153,7 +162,7 @@ export function ParticipantSessionPage() {
       });
     } catch (caught) {
       setError(
-        caught instanceof Error ? caught.message : 'No se pudo ingresar.',
+        caught instanceof Error ? caught.message : "No se pudo ingresar.",
       );
     } finally {
       setBusy(false);
@@ -164,20 +173,19 @@ export function ParticipantSessionPage() {
   const hasIdentity = identity !== undefined || localState !== null;
 
   function draftsFor(count: number): readonly string[] {
-    if (localState === null) return Array.from({ length: count }, () => '');
+    if (localState === null) return Array.from({ length: count }, () => "");
     try {
       const parsed: unknown = JSON.parse(localState.draft);
       if (Array.isArray(parsed)) {
         return Array.from({ length: count }, (_, index) =>
-          typeof parsed[index] === 'string' ? parsed[index] : '',
+          typeof parsed[index] === "string" ? parsed[index] : "",
         );
       }
     } catch {
       // Los borradores antiguos guardaban una sola cadena.
     }
-    return Array.from(
-      { length: count },
-      (_, index) => (index === 0 ? localState.draft : ''),
+    return Array.from({ length: count }, (_, index) =>
+      index === 0 ? localState.draft : "",
     );
   }
 
@@ -196,7 +204,7 @@ export function ParticipantSessionPage() {
       ...localState,
       draft: JSON.stringify(drafts),
       pending: {
-        kind: 'BRAINSTORMING',
+        kind: "BRAINSTORMING",
         submissionId: globalThis.crypto.randomUUID(),
         payload: drafts,
       },
@@ -205,7 +213,7 @@ export function ParticipantSessionPage() {
     setLocalState(pendingState);
     setLastConfirmed(false);
     if (!online) {
-      setError('Sin conexión. El borrador quedó guardado para reintentar.');
+      setError("Sin conexión. El borrador quedó guardado para reintentar.");
       return;
     }
     setBusy(true);
@@ -222,7 +230,9 @@ export function ParticipantSessionPage() {
         sessionId: pendingState.sessionId,
         participantId: pendingState.participantId,
         accessTokenId: pendingState.accessTokenId,
-        ...(pendingState.alias === undefined ? {} : { alias: pendingState.alias }),
+        ...(pendingState.alias === undefined
+          ? {}
+          : { alias: pendingState.alias }),
         draft: pendingState.draft,
       };
       createLocalParticipantStore().save(confirmed);
@@ -232,7 +242,7 @@ export function ParticipantSessionPage() {
       );
       setLastConfirmed(true);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'No se pudo enviar.');
+      setError(caught instanceof Error ? caught.message : "No se pudo enviar.");
     } finally {
       setBusy(false);
     }
@@ -254,7 +264,7 @@ export function ParticipantSessionPage() {
       setError(
         caught instanceof Error
           ? caught.message
-          : 'No se pudo enviar la respuesta.',
+          : "No se pudo enviar la respuesta.",
       );
     } finally {
       setBusy(false);
@@ -262,10 +272,10 @@ export function ParticipantSessionPage() {
   }
 
   function pendingRefinementSelection(): readonly string[] {
-    if (localState?.pending?.kind !== 'REFINEMENT') return [];
+    if (localState?.pending?.kind !== "REFINEMENT") return [];
     return Array.isArray(localState.pending.payload)
       ? localState.pending.payload.filter(
-          (item): item is string => typeof item === 'string',
+          (item): item is string => typeof item === "string",
         )
       : [];
   }
@@ -276,9 +286,9 @@ export function ParticipantSessionPage() {
     const next: ParticipantLocalState = {
       ...localState,
       pending: {
-        kind: 'REFINEMENT',
+        kind: "REFINEMENT",
         submissionId:
-          existing?.kind === 'REFINEMENT'
+          existing?.kind === "REFINEMENT"
             ? existing.submissionId
             : globalThis.crypto.randomUUID(),
         payload: selection,
@@ -294,13 +304,13 @@ export function ParticipantSessionPage() {
     if (runtime === null || localState === null) return;
     const existing = localState.pending;
     const submissionId =
-      existing?.kind === 'REFINEMENT'
+      existing?.kind === "REFINEMENT"
         ? existing.submissionId
         : globalThis.crypto.randomUUID();
     const pending: ParticipantLocalState = {
       ...localState,
       pending: {
-        kind: 'REFINEMENT',
+        kind: "REFINEMENT",
         submissionId,
         payload: selection,
       },
@@ -309,7 +319,7 @@ export function ParticipantSessionPage() {
     setLocalState(pending);
     setLastConfirmed(false);
     if (!online) {
-      setError('Sin conexión. El voto quedó guardado para reintentar.');
+      setError("Sin conexión. El voto quedó guardado para reintentar.");
       return;
     }
     setBusy(true);
@@ -333,14 +343,12 @@ export function ParticipantSessionPage() {
       createLocalParticipantStore().save(confirmed);
       setLocalState(confirmed);
       setWorkspace((current) =>
-        current === null
-          ? current
-          : { ...current, refinementSubmitted: true },
+        current === null ? current : { ...current, refinementSubmitted: true },
       );
       setLastConfirmed(true);
     } catch (caught) {
       setError(
-        caught instanceof Error ? caught.message : 'No se pudo enviar el voto.',
+        caught instanceof Error ? caught.message : "No se pudo enviar el voto.",
       );
     } finally {
       setBusy(false);
@@ -348,10 +356,10 @@ export function ParticipantSessionPage() {
   }
 
   function pendingTieBreakSelection(): readonly string[] {
-    if (localState?.pending?.kind !== 'TIEBREAK') return [];
+    if (localState?.pending?.kind !== "TIEBREAK") return [];
     return Array.isArray(localState.pending.payload)
       ? localState.pending.payload.filter(
-          (item): item is string => typeof item === 'string',
+          (item): item is string => typeof item === "string",
         )
       : [];
   }
@@ -362,9 +370,9 @@ export function ParticipantSessionPage() {
     const next: ParticipantLocalState = {
       ...localState,
       pending: {
-        kind: 'TIEBREAK',
+        kind: "TIEBREAK",
         submissionId:
-          existing?.kind === 'TIEBREAK'
+          existing?.kind === "TIEBREAK"
             ? existing.submissionId
             : globalThis.crypto.randomUUID(),
         payload: selection,
@@ -380,13 +388,13 @@ export function ParticipantSessionPage() {
     if (runtime === null || localState === null) return;
     const existing = localState.pending;
     const submissionId =
-      existing?.kind === 'TIEBREAK'
+      existing?.kind === "TIEBREAK"
         ? existing.submissionId
         : globalThis.crypto.randomUUID();
     const pending: ParticipantLocalState = {
       ...localState,
       pending: {
-        kind: 'TIEBREAK',
+        kind: "TIEBREAK",
         submissionId,
         payload: selection,
       },
@@ -395,7 +403,7 @@ export function ParticipantSessionPage() {
     setLocalState(pending);
     setLastConfirmed(false);
     if (!online) {
-      setError('Sin conexión. El desempate quedó guardado para reintentar.');
+      setError("Sin conexión. El desempate quedó guardado para reintentar.");
       return;
     }
     setBusy(true);
@@ -419,16 +427,14 @@ export function ParticipantSessionPage() {
       createLocalParticipantStore().save(confirmed);
       setLocalState(confirmed);
       setWorkspace((current) =>
-        current === null
-          ? current
-          : { ...current, tieBreakSubmitted: true },
+        current === null ? current : { ...current, tieBreakSubmitted: true },
       );
       setLastConfirmed(true);
     } catch (caught) {
       setError(
         caught instanceof Error
           ? caught.message
-          : 'No se pudo enviar el desempate.',
+          : "No se pudo enviar el desempate.",
       );
     } finally {
       setBusy(false);
@@ -437,8 +443,8 @@ export function ParticipantSessionPage() {
 
   function pendingIceRatings(): IceDraftRatings {
     if (
-      localState?.pending?.kind !== 'ICE' ||
-      typeof localState.pending.payload !== 'object' ||
+      localState?.pending?.kind !== "ICE" ||
+      typeof localState.pending.payload !== "object" ||
       localState.pending.payload === null ||
       Array.isArray(localState.pending.payload)
     ) {
@@ -453,9 +459,9 @@ export function ParticipantSessionPage() {
     const next: ParticipantLocalState = {
       ...localState,
       pending: {
-        kind: 'ICE',
+        kind: "ICE",
         submissionId:
-          existing?.kind === 'ICE'
+          existing?.kind === "ICE"
             ? existing.submissionId
             : globalThis.crypto.randomUUID(),
         payload: ratings,
@@ -467,19 +473,19 @@ export function ParticipantSessionPage() {
   }
 
   async function submitIce(
-    ratings: Parameters<typeof submitIceEvaluationRemote>[0]['ratings'],
+    ratings: Parameters<typeof submitIceEvaluationRemote>[0]["ratings"],
   ) {
     const runtime = getFirebaseRuntime();
     if (runtime === null || localState === null) return;
     const existing = localState.pending;
     const submissionId =
-      existing?.kind === 'ICE'
+      existing?.kind === "ICE"
         ? existing.submissionId
         : globalThis.crypto.randomUUID();
     const pending: ParticipantLocalState = {
       ...localState,
       pending: {
-        kind: 'ICE',
+        kind: "ICE",
         submissionId,
         payload: ratings,
       },
@@ -488,7 +494,7 @@ export function ParticipantSessionPage() {
     setLocalState(pending);
     setLastConfirmed(false);
     if (!online) {
-      setError('Sin conexión. La evaluación quedó guardada para reintentar.');
+      setError("Sin conexión. La evaluación quedó guardada para reintentar.");
       return;
     }
     setBusy(true);
@@ -519,7 +525,7 @@ export function ParticipantSessionPage() {
       setError(
         caught instanceof Error
           ? caught.message
-          : 'No se pudo enviar la evaluación ICE.',
+          : "No se pudo enviar la evaluación ICE.",
       );
     } finally {
       setBusy(false);
@@ -533,28 +539,25 @@ export function ParticipantSessionPage() {
       const parsed: unknown = JSON.parse(localState.draft);
       return (
         Array.isArray(parsed) &&
-        parsed.some((item) => typeof item === 'string' && item.trim() !== '')
+        parsed.some((item) => typeof item === "string" && item.trim() !== "")
       );
     } catch {
-      return localState.draft.trim() !== '';
+      return localState.draft.trim() !== "";
     }
   }
 
   function currentStageConfirmed(): boolean {
     if (workspace === null) return false;
-    if (
-      workspace.stage === 'BRAINSTORMING' ||
-      workspace.stage === 'REVISION'
-    ) {
+    if (workspace.stage === "BRAINSTORMING" || workspace.stage === "REVISION") {
       return workspace.submitted;
     }
-    if (workspace.stage === 'DEPURACION') {
+    if (workspace.stage === "DEPURACION") {
       return workspace.refinementSubmitted;
     }
-    if (workspace.stage === 'DESEMPATE_DEPURACION') {
+    if (workspace.stage === "DESEMPATE_DEPURACION") {
       return workspace.tieBreakSubmitted;
     }
-    if (workspace.stage === 'EVALUACION_ICE') {
+    if (workspace.stage === "EVALUACION_ICE") {
       return workspace.iceSubmitted;
     }
     return false;
@@ -563,55 +566,60 @@ export function ParticipantSessionPage() {
   function retryPending() {
     const pending = localState?.pending;
     if (pending === undefined) return;
-    if (pending.kind === 'BRAINSTORMING' && Array.isArray(pending.payload)) {
+    if (pending.kind === "BRAINSTORMING" && Array.isArray(pending.payload)) {
       void submitInitiatives(
         pending.payload.filter(
-          (item): item is string => typeof item === 'string',
-        ),
-      );
-    } else if (pending.kind === 'REFINEMENT' && Array.isArray(pending.payload)) {
-      void submitRefinement(
-        pending.payload.filter(
-          (item): item is string => typeof item === 'string',
-        ),
-      );
-    } else if (pending.kind === 'TIEBREAK' && Array.isArray(pending.payload)) {
-      void submitTieBreak(
-        pending.payload.filter(
-          (item): item is string => typeof item === 'string',
+          (item): item is string => typeof item === "string",
         ),
       );
     } else if (
-      pending.kind === 'ICE' &&
-      typeof pending.payload === 'object' &&
+      pending.kind === "REFINEMENT" &&
+      Array.isArray(pending.payload)
+    ) {
+      void submitRefinement(
+        pending.payload.filter(
+          (item): item is string => typeof item === "string",
+        ),
+      );
+    } else if (pending.kind === "TIEBREAK" && Array.isArray(pending.payload)) {
+      void submitTieBreak(
+        pending.payload.filter(
+          (item): item is string => typeof item === "string",
+        ),
+      );
+    } else if (
+      pending.kind === "ICE" &&
+      typeof pending.payload === "object" &&
       pending.payload !== null &&
       !Array.isArray(pending.payload)
     ) {
       void submitIce(
-        pending.payload as Parameters<typeof submitIceEvaluationRemote>[0]['ratings'],
+        pending.payload as Parameters<
+          typeof submitIceEvaluationRemote
+        >[0]["ratings"],
       );
     }
   }
 
   const stageLabels: Readonly<Record<string, string>> = {
-    CONFIGURACION: 'Configuración',
-    SALA_DE_ESPERA: 'Sala de espera',
-    BRAINSTORMING: 'Brainstorming',
-    REVISION: 'Revisión',
-    DEPURACION: 'Depuración',
-    DESEMPATE_DEPURACION: 'Desempate',
-    CONFIGURACION_ICE: 'Configuración ICE',
-    EVALUACION_ICE: 'Evaluación ICE',
-    RESULTADO_FINAL: 'Resultado final',
-    FINALIZADA: 'Finalizada',
+    CONFIGURACION: "Configuración",
+    SALA_DE_ESPERA: "Sala de espera",
+    BRAINSTORMING: "Brainstorming",
+    REVISION: "Revisión",
+    DEPURACION: "Depuración",
+    DESEMPATE_DEPURACION: "Desempate",
+    CONFIGURACION_ICE: "Configuración ICE",
+    EVALUACION_ICE: "Evaluación ICE",
+    RESULTADO_FINAL: "Resultado final",
+    FINALIZADA: "Finalizada",
   };
   const syncStatus: ParticipantSyncState = busy
-    ? 'SENDING'
+    ? "SENDING"
     : error !== null && localState?.pending !== undefined
-      ? 'ERROR'
+      ? "ERROR"
       : lastConfirmed || currentStageConfirmed()
-        ? 'CONFIRMED'
-        : 'IDLE';
+        ? "CONFIRMED"
+        : "IDLE";
   const facilitatorPresenceKnown =
     workspace?.facilitatorLastSeenAtMillis !== null &&
     workspace?.facilitatorLastSeenAtMillis !== undefined;
@@ -621,108 +629,158 @@ export function ParticipantSessionPage() {
     isPresenceActive(workspace.facilitatorLastSeenAtMillis, presenceNow);
 
   return (
-    <PlaceholderPage title="Sesión de participante">
-      {hasIdentity ? (
-        <Stack spacing={2}>
-          <Paper variant="outlined" sx={{ p: 2, overflowWrap: 'anywhere' }}>
-            <Stack spacing={1}>
-              <Alert severity="success">Acceso confirmado</Alert>
-              <Typography component="h2" variant="h2">
-                {alias === undefined ? 'Tu sesión está lista' : `Hola, ${alias}`}
-              </Typography>
-              <Typography color="text.secondary">
-                Tu nombre real permanece privado.
-              </Typography>
-            </Stack>
-          </Paper>
-          <ParticipantSyncStatus
-            online={online}
-            status={syncStatus}
-            hasDraft={hasLocalDraft()}
-            stageLabel={
-              workspace === null
-                ? 'Conectando'
-                : (stageLabels[workspace.stage] ?? workspace.stage)
-            }
-            onRetry={retryPending}
-          />
-          {facilitatorPresenceKnown && !facilitatorOnline ? (
-            <Alert severity="warning" aria-live="polite">
-              El facilitador está temporalmente desconectado. Puedes continuar
-              preparando tu actividad; los cambios de etapa esperarán su regreso.
-            </Alert>
-          ) : null}
-          {workspace === null ? (
-            <Typography aria-live="polite">Cargando actividad…</Typography>
-          ) : workspace.stage === 'BRAINSTORMING' ||
-            workspace.stage === 'REVISION' ? (
-            <InitiativeCapture
-              count={workspace.initiativesPerParticipant}
-              initialDrafts={draftsFor(workspace.initiativesPerParticipant)}
-              submitted={workspace.submitted}
-              clarifications={workspace.clarifications}
-              busy={busy}
-              error={error}
-              onDraftChange={saveDraft}
-              onSubmit={submitInitiatives}
-              onRespond={respond}
-            />
-          ) : workspace.stage === 'DEPURACION' &&
-            workspace.finalistCount !== null ? (
-            <RefinementBallotForm
-              initiatives={workspace.initiatives}
-              requiredCount={workspace.finalistCount}
-              initialSelection={pendingRefinementSelection()}
-              submitted={workspace.refinementSubmitted}
-              busy={busy}
-              error={error}
-              onSelectionChange={saveRefinementSelection}
-              onSubmit={submitRefinement}
-            />
-          ) : workspace.stage === 'DESEMPATE_DEPURACION' &&
-            workspace.tieBreak !== null ? (
-            <TieBreakBallotForm
-              initiatives={workspace.initiatives.filter((initiative) =>
-                workspace.tieBreak?.candidateIds.includes(initiative.id),
+    <Box
+      sx={{
+        flexGrow: 1,
+        display: "flex",
+        flexDirection: "column",
+        padding: "1rem",
+        background: "rgba(0, 0, 0, 0.48)",
+        borderRadius: "12px",
+        boxShadow: "0 4px 30px rgba(0, 0, 0, 0.6)",
+        backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
+        border: "1px solid rgba(0, 0, 0, 0.4)",
+        color: "white",
+        alignItems: "center",
+      }}
+    >
+      <Box
+        sx={{
+          // flexGrow: 1,
+          display: "flex",
+          width: "40rem",
+        }}
+      >
+        <PlaceholderPage title="Sesión de participante">
+          {hasIdentity ? (
+            <Stack spacing={2}>
+              <Paper
+                variant="outlined"
+                sx={{
+                  p: 2,
+                  overflowWrap: "anywhere",
+                  borderRadius: "12px",
+                  overflowY: "auto",
+                  background: "rgba(250, 250, 250, 0.71)",
+                  border: "1px solid rgba(250, 250, 250,1)",
+                  boxShadow: "0 4px 30px rgba(0, 0, 0, 0.6)",
+                  // width: "40rem",                display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                }}
+              >
+                <Stack
+                  spacing={1}
+                  sx={
+                    {
+                      // height: { md: "36.5rem", lg: "36.4rem", xl: "49.9rem" },
+                      // width: "40rem",
+                    }
+                  }
+                >
+                  <Alert severity="success">Acceso confirmado</Alert>
+                  <Typography component="h2" variant="h2">
+                    {alias === undefined
+                      ? "Tu sesión está lista"
+                      : `Hola, ${alias}`}
+                  </Typography>
+                  <Typography color="text.secondary">
+                    Tu nombre real permanece privado.
+                  </Typography>
+                </Stack>
+              </Paper>
+              <ParticipantSyncStatus
+                online={online}
+                status={syncStatus}
+                hasDraft={hasLocalDraft()}
+                stageLabel={
+                  workspace === null
+                    ? "Conectando"
+                    : (stageLabels[workspace.stage] ?? workspace.stage)
+                }
+                onRetry={retryPending}
+              />
+              {facilitatorPresenceKnown && !facilitatorOnline ? (
+                <Alert severity="warning" aria-live="polite">
+                  El facilitador está temporalmente desconectado. Puedes
+                  continuar preparando tu actividad; los cambios de etapa
+                  esperarán su regreso.
+                </Alert>
+              ) : null}
+              {workspace === null ? (
+                <Typography aria-live="polite">Cargando actividad…</Typography>
+              ) : workspace.stage === "BRAINSTORMING" ||
+                workspace.stage === "REVISION" ? (
+                <InitiativeCapture
+                  count={workspace.initiativesPerParticipant}
+                  initialDrafts={draftsFor(workspace.initiativesPerParticipant)}
+                  submitted={workspace.submitted}
+                  clarifications={workspace.clarifications}
+                  busy={busy}
+                  error={error}
+                  onDraftChange={saveDraft}
+                  onSubmit={submitInitiatives}
+                  onRespond={respond}
+                />
+              ) : workspace.stage === "DEPURACION" &&
+                workspace.finalistCount !== null ? (
+                <RefinementBallotForm
+                  initiatives={workspace.initiatives}
+                  requiredCount={workspace.finalistCount}
+                  initialSelection={pendingRefinementSelection()}
+                  submitted={workspace.refinementSubmitted}
+                  busy={busy}
+                  error={error}
+                  onSelectionChange={saveRefinementSelection}
+                  onSubmit={submitRefinement}
+                />
+              ) : workspace.stage === "DESEMPATE_DEPURACION" &&
+                workspace.tieBreak !== null ? (
+                <TieBreakBallotForm
+                  initiatives={workspace.initiatives.filter((initiative) =>
+                    workspace.tieBreak?.candidateIds.includes(initiative.id),
+                  )}
+                  slotsRemaining={workspace.tieBreak.slotsRemaining}
+                  initialSelection={pendingTieBreakSelection()}
+                  submitted={workspace.tieBreakSubmitted}
+                  busy={busy}
+                  error={error}
+                  onSelectionChange={saveTieBreakSelection}
+                  onSubmit={submitTieBreak}
+                />
+              ) : workspace.stage === "EVALUACION_ICE" ? (
+                <IceEvaluationStepper
+                  initiatives={workspace.finalistIds.flatMap((id) => {
+                    const initiative = workspace.initiatives.find(
+                      (item) => item.id === id,
+                    );
+                    return initiative === undefined ? [] : [initiative];
+                  })}
+                  initialRatings={pendingIceRatings()}
+                  submitted={workspace.iceSubmitted}
+                  busy={busy}
+                  error={error}
+                  onRatingsChange={saveIceRatings}
+                  onSubmit={submitIce}
+                />
+              ) : (
+                <Alert severity="info">
+                  Espera las indicaciones del facilitador para continuar.
+                </Alert>
               )}
-              slotsRemaining={workspace.tieBreak.slotsRemaining}
-              initialSelection={pendingTieBreakSelection()}
-              submitted={workspace.tieBreakSubmitted}
-              busy={busy}
-              error={error}
-              onSelectionChange={saveTieBreakSelection}
-              onSubmit={submitTieBreak}
-            />
-          ) : workspace.stage === 'EVALUACION_ICE' ? (
-            <IceEvaluationStepper
-              initiatives={workspace.finalistIds.flatMap((id) => {
-                const initiative = workspace.initiatives.find(
-                  (item) => item.id === id,
-                );
-                return initiative === undefined ? [] : [initiative];
-              })}
-              initialRatings={pendingIceRatings()}
-              submitted={workspace.iceSubmitted}
-              busy={busy}
-              error={error}
-              onRatingsChange={saveIceRatings}
-              onSubmit={submitIce}
-            />
+            </Stack>
           ) : (
-            <Alert severity="info">
-              Espera las indicaciones del facilitador para continuar.
-            </Alert>
+            <ParticipantAccessForm
+              initialPublicCode={routeValue}
+              initialToken={initialToken.current}
+              busy={busy}
+              error={error}
+              onSubmit={enter}
+            />
           )}
-        </Stack>
-      ) : (
-        <ParticipantAccessForm
-          initialPublicCode={routeValue}
-          initialToken={initialToken.current}
-          busy={busy}
-          error={error}
-          onSubmit={enter}
-        />
-      )}
-    </PlaceholderPage>
+        </PlaceholderPage>
+      </Box>
+    </Box>
   );
 }

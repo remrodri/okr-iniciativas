@@ -1,11 +1,12 @@
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-import { useState, type FormEvent } from 'react';
+import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
+import { useState, type FormEvent } from "react";
 
-import { normalizePublicCode } from '@/infrastructure/firebase/participantEntry';
+import { normalizePublicCode } from "@/infrastructure/firebase/participantEntry";
+import { Box } from "@mui/material";
 
 export interface ParticipantAccessValues {
   readonly publicCode: string;
@@ -22,8 +23,8 @@ interface ParticipantAccessFormProps {
 }
 
 export function ParticipantAccessForm({
-  initialPublicCode = '',
-  initialToken = '',
+  initialPublicCode = "",
+  initialToken = "",
   busy = false,
   error = null,
   onSubmit,
@@ -32,7 +33,7 @@ export function ParticipantAccessForm({
     normalizePublicCode(initialPublicCode),
   );
   const [token, setToken] = useState(initialToken);
-  const [realName, setRealName] = useState('');
+  const [realName, setRealName] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -56,55 +57,77 @@ export function ParticipantAccessForm({
   }
 
   return (
-    <Stack component="form" spacing={2} onSubmit={submit} noValidate>
-      <Typography color="text.secondary">
-        Tu nombre se mantendrá privado hasta que se publique el resultado final.
-      </Typography>
-      {error === null ? null : <Alert severity="error">{error}</Alert>}
-      <TextField
-        label="Código de sesión"
-        value={publicCode}
-        onChange={(event) => setPublicCode(event.target.value)}
-        error={submitted && publicCode.trim().length === 0}
-        helperText={
-          submitted && publicCode.trim().length === 0
-            ? 'Este campo es obligatorio.'
-            : 'Está en el enlace o QR público.'
-        }
-        autoComplete="off"
-        slotProps={{ htmlInput: { maxLength: 12 } }}
-        fullWidth
-      />
-      <TextField
-        label="Clave personal"
-        type="password"
-        value={token}
-        onChange={(event) => setToken(event.target.value)}
-        error={submitted && token.trim().length === 0}
-        helperText={
-          submitted && token.trim().length === 0
-            ? 'Este campo es obligatorio.'
-            : 'Usa la clave o el QR asignado a tu alias.'
-        }
-        autoComplete="one-time-code"
-        fullWidth
-      />
-      <TextField
-        label="Tu nombre real"
-        value={realName}
-        onChange={(event) => setRealName(event.target.value)}
-        error={submitted && realName.trim().length === 0}
-        helperText={
-          submitted && realName.trim().length === 0
-            ? 'Este campo es obligatorio.'
-            : 'Sólo se revelará al terminar la priorización.'
-        }
-        autoComplete="name"
-        fullWidth
-      />
-      <Button type="submit" variant="contained" disabled={busy} fullWidth>
-        {busy ? 'Ingresando…' : 'Ingresar'}
-      </Button>
+    <Stack
+      component="form"
+      spacing={2}
+      onSubmit={submit}
+      noValidate
+      sx={{
+        height: { md: "36.5rem", lg: "36.4rem", xl: "49.9rem" },
+        borderRadius: "12px",
+        overflowY: "auto",
+        background: "rgba(250, 250, 250, 0.71)",
+        border: "1px solid rgba(250, 250, 250,1)",
+        p: 2,
+        width: "40rem",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}
+    >
+      <Box>
+        <Typography color="text.secondary" sx={{ color: "black" }}>
+          Tu nombre se mantendrá privado hasta que se publique el resultado
+          final.
+        </Typography>
+        {error === null ? null : <Alert severity="error">{error}</Alert>}
+        <TextField
+          label="Código de sesión"
+          value={publicCode}
+          onChange={(event) => setPublicCode(event.target.value)}
+          error={submitted && publicCode.trim().length === 0}
+          helperText={
+            submitted && publicCode.trim().length === 0
+              ? "Este campo es obligatorio."
+              : "Está en el enlace o QR público."
+          }
+          autoComplete="off"
+          slotProps={{ htmlInput: { maxLength: 12 } }}
+          fullWidth
+        />
+        <TextField
+          label="Clave personal"
+          type="password"
+          value={token}
+          onChange={(event) => setToken(event.target.value)}
+          error={submitted && token.trim().length === 0}
+          helperText={
+            submitted && token.trim().length === 0
+              ? "Este campo es obligatorio."
+              : "Usa la clave o el QR asignado a tu alias."
+          }
+          autoComplete="one-time-code"
+          fullWidth
+        />
+        <TextField
+          label="Tu nombre real"
+          value={realName}
+          onChange={(event) => setRealName(event.target.value)}
+          error={submitted && realName.trim().length === 0}
+          helperText={
+            submitted && realName.trim().length === 0
+              ? "Este campo es obligatorio."
+              : "Sólo se revelará al terminar la priorización."
+          }
+          autoComplete="name"
+          fullWidth
+        />
+      </Box>
+      <Box>
+        <Button type="submit" variant="contained" disabled={busy} fullWidth>
+          {busy ? "Ingresando…" : "Ingresar"}
+        </Button>
+      </Box>
     </Stack>
   );
 }

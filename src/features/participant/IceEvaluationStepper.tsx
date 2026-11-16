@@ -120,7 +120,17 @@ export function IceEvaluationStepper({
       complete(ratings[initiative.id]),
     ).length;
     return (
-      <Stack spacing={2}>
+      <Stack
+        spacing={2}
+        sx={{
+          borderRadius: "12px",
+          // overflowY: "auto",
+          background: "rgba(250, 250, 250, 0.71)",
+          border: "1px solid rgba(250, 250, 250,1)",
+          padding: 2,
+          color: "black",
+        }}
+      >
         <Typography component="h2" variant="h2">
           Resumen de evaluación ICE
         </Typography>
@@ -131,7 +141,7 @@ export function IceEvaluationStepper({
           const scores = ratings[initiative.id];
           return (
             <Paper key={initiative.id} variant="outlined" sx={{ p: 2 }}>
-              <Typography sx={{ fontWeight: 600, overflowWrap: 'anywhere' }}>
+              <Typography sx={{ fontWeight: 600, overflowWrap: "anywhere" }}>
                 {initiative.text}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -146,7 +156,7 @@ export function IceEvaluationStepper({
           Volver a revisar
         </Button>
         <Button variant="contained" disabled={busy} onClick={confirm}>
-          {busy ? 'Enviando…' : 'Confirmar evaluación'}
+          {busy ? "Enviando…" : "Confirmar evaluación"}
         </Button>
       </Stack>
     );
@@ -161,7 +171,19 @@ export function IceEvaluationStepper({
   };
 
   return (
-    <Stack spacing={2} sx={{ minWidth: 0, maxWidth: '100%' }}>
+    <Stack
+      spacing={2}
+      sx={{
+        minWidth: 0,
+        maxWidth: "100%",
+        borderRadius: "12px",
+        // overflowY: "auto",
+        background: "rgba(250, 250, 250, 0.71)",
+        border: "1px solid rgba(250, 250, 250,1)",
+        padding: 2,
+        color: "black",
+      }}
+    >
       <Typography component="h2" variant="h2">
         Evaluación ICE
       </Typography>
@@ -173,14 +195,14 @@ export function IceEvaluationStepper({
         value={((index + 1) / initiatives.length) * 100}
         aria-label="Progreso de evaluación"
       />
-      <Paper variant="outlined" sx={{ p: 2, overflowWrap: 'anywhere' }}>
+      <Paper variant="outlined" sx={{ p: 2, overflowWrap: "anywhere" }}>
         <Typography>{current.text}</Typography>
       </Paper>
       <TextField
         label="Impacto"
         type="number"
-        value={currentScores?.impact ?? ''}
-        onChange={(event) => update('impact', event.target.value)}
+        value={currentScores?.impact ?? ""}
+        onChange={(event) => update("impact", event.target.value)}
         slotProps={{ htmlInput: inputProps }}
         helperText="1 = impacto bajo · 10 = impacto alto"
         fullWidth
@@ -188,8 +210,8 @@ export function IceEvaluationStepper({
       <TextField
         label="Confianza"
         type="number"
-        value={currentScores?.confidence ?? ''}
-        onChange={(event) => update('confidence', event.target.value)}
+        value={currentScores?.confidence ?? ""}
+        onChange={(event) => update("confidence", event.target.value)}
         slotProps={{ htmlInput: inputProps }}
         helperText="1 = poca confianza · 10 = mucha confianza"
         fullWidth
@@ -197,8 +219,8 @@ export function IceEvaluationStepper({
       <TextField
         label="Facilidad"
         type="number"
-        value={currentScores?.ease ?? ''}
-        onChange={(event) => update('ease', event.target.value)}
+        value={currentScores?.ease ?? ""}
+        onChange={(event) => update("ease", event.target.value)}
         slotProps={{ htmlInput: inputProps }}
         helperText="1 = difícil · 10 = fácil"
         fullWidth
@@ -218,8 +240,8 @@ export function IceEvaluationStepper({
         </Button>
         <Button variant="contained" onClick={advance} fullWidth>
           {index === initiatives.length - 1
-            ? 'Revisar evaluación'
-            : 'Siguiente'}
+            ? "Revisar evaluación"
+            : "Siguiente"}
         </Button>
       </Stack>
     </Stack>

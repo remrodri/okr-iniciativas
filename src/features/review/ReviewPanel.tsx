@@ -64,7 +64,18 @@ export function ReviewPanel({
   }
 
   return (
-    <Stack spacing={3}>
+    <Stack
+      spacing={2}
+      sx={
+        {
+          // height: { md: "36.5rem", lg: "36.4rem", xl: "49.9rem" },
+          // borderRadius: "12px",
+          // overflowY: "auto",
+          // background: "rgba(250, 250, 250, 0.71)",
+          // border: "1px solid rgba(250, 250, 250,1)",
+        }
+      }
+    >
       <Alert severity="info">
         Revisión ciega: la autoría permanece oculta durante la revisión.
       </Alert>
@@ -76,7 +87,7 @@ export function ReviewPanel({
         const linkedTexts = initiatives
           .filter(
             (item) =>
-              item.status === 'FUSED' && item.mergedIntoId === initiative.id,
+              item.status === "FUSED" && item.mergedIntoId === initiative.id,
           )
           .map((item) => item.text);
         const originalTexts = [
@@ -87,13 +98,23 @@ export function ReviewPanel({
         ];
 
         return (
-          <Paper key={initiative.id} variant="outlined" sx={{ p: 2 }}>
+          <Paper
+            key={initiative.id}
+            variant="outlined"
+            sx={{
+              p: 2,
+              borderRadius: "12px",
+              overflowY: "auto",
+              background: "rgba(250, 250, 250, 0.71)",
+              border: "1px solid rgba(250, 250, 250,1)",
+            }}
+          >
             <Stack spacing={2}>
               <Box>
                 <Typography variant="body2" color="text.secondary">
                   Revisión {initiative.revision}
                 </Typography>
-                <Typography sx={{ wordBreak: 'break-word' }}>
+                <Typography sx={{ wordBreak: "break-word" }}>
                   {initiative.text}
                 </Typography>
               </Box>
@@ -125,7 +146,7 @@ export function ReviewPanel({
 
               <TextField
                 label="Corrección de ortografía o puntuación"
-                value={drafts[initiative.id] ?? ''}
+                value={drafts[initiative.id] ?? ""}
                 onChange={(event) =>
                   setDrafts((current) => ({
                     ...current,
@@ -137,7 +158,7 @@ export function ReviewPanel({
               <Button
                 variant="outlined"
                 onClick={() =>
-                  onCorrect(initiative.id, drafts[initiative.id] ?? '')
+                  onCorrect(initiative.id, drafts[initiative.id] ?? "")
                 }
               >
                 Guardar corrección
@@ -145,7 +166,7 @@ export function ReviewPanel({
 
               <TextField
                 label="Solicitud anónima de aclaración"
-                value={messages[initiative.id] ?? ''}
+                value={messages[initiative.id] ?? ""}
                 onChange={(event) =>
                   setMessages((current) => ({
                     ...current,
@@ -159,7 +180,7 @@ export function ReviewPanel({
                 onClick={() =>
                   onRequestClarification(
                     initiative.id,
-                    messages[initiative.id] ?? '',
+                    messages[initiative.id] ?? "",
                   )
                 }
               >
@@ -169,7 +190,8 @@ export function ReviewPanel({
               {requests.map((request) => (
                 <Box key={request.id}>
                   <Typography variant="body2" color="text.secondary">
-                    Aclaración {request.status === 'OPEN' ? 'pendiente' : 'resuelta'}
+                    Aclaración{" "}
+                    {request.status === "OPEN" ? "pendiente" : "resuelta"}
                   </Typography>
                   <Typography>{request.message}</Typography>
                   {request.responseText === null ? null : (
@@ -184,7 +206,17 @@ export function ReviewPanel({
         );
       })}
 
-      <Paper variant="outlined" sx={{ p: 2 }}>
+      <Paper
+        variant="outlined"
+        sx={{
+          p: 2,
+          // height: { md: "36.5rem", lg: "36.4rem", xl: "49.9rem" },
+          borderRadius: "12px",
+          // overflowY: "auto",
+          background: "rgba(250, 250, 250, 0.71)",
+          border: "1px solid rgba(250, 250, 250,1)",
+        }}
+      >
         <Stack spacing={2}>
           <Typography component="h2" variant="h2">
             Fusión de propuestas similares

@@ -71,16 +71,25 @@ export function RefinementBallotForm({
       .map((id) => initiatives.find((item) => item.id === id))
       .filter((item): item is BallotInitiative => item !== undefined);
     return (
-      <Stack spacing={2}>
+      <Stack
+        spacing={2}
+        sx={{
+          borderRadius: "12px",
+          // overflowY: "auto",
+          background: "rgba(250, 250, 250, 0.71)",
+          border: "1px solid rgba(250, 250, 250,1)",
+          padding: 2,
+        }}
+      >
         <Typography component="h2" variant="h2">
           {reviewTitle}
         </Typography>
-        <Typography color="text.secondary">
+        <Typography color="text.secondary" sx={{ color: "black" }}>
           Después de confirmarlo no podrás cambiar la selección.
         </Typography>
         {selectedInitiatives.map((initiative) => (
           <Paper key={initiative.id} variant="outlined" sx={{ p: 2 }}>
-            <Typography sx={{ overflowWrap: 'anywhere' }}>
+            <Typography sx={{ overflowWrap: "anywhere" }}>
               {initiative.text}
             </Typography>
           </Paper>
@@ -94,18 +103,30 @@ export function RefinementBallotForm({
           disabled={busy}
           onClick={() => onSubmit(selection)}
         >
-          {busy ? 'Enviando…' : confirmButtonLabel}
+          {busy ? "Enviando…" : confirmButtonLabel}
         </Button>
       </Stack>
     );
   }
 
   return (
-    <Stack spacing={2} sx={{ minWidth: 0, maxWidth: '100%' }}>
+    <Stack
+      spacing={2}
+      sx={{
+        minWidth: 0,
+        maxWidth: "100%",
+        borderRadius: "12px",
+        // overflowY: "auto",
+        background: "rgba(250, 250, 250, 0.71)",
+        border: "1px solid rgba(250, 250, 250,1)",
+        padding: 2,
+        color: "black",
+      }}
+    >
       <Typography component="h2" variant="h2">
         {title}
       </Typography>
-      <Alert severity={selection.length === requiredCount ? 'success' : 'info'}>
+      <Alert severity={selection.length === requiredCount ? "success" : "info"}>
         {selection.length} de {requiredCount} seleccionadas
       </Alert>
       {initiatives.map((initiative) => {
@@ -114,10 +135,10 @@ export function RefinementBallotForm({
           <Paper
             key={initiative.id}
             variant="outlined"
-            sx={{ p: 1.5, minWidth: 0, overflow: 'hidden' }}
+            sx={{ p: 1.5, minWidth: 0, overflow: "hidden" }}
           >
             <FormControlLabel
-              sx={{ m: 0, width: '100%', alignItems: 'flex-start' }}
+              sx={{ m: 0, width: "100%", alignItems: "flex-start" }}
               control={
                 <Checkbox
                   checked={checked}
@@ -126,7 +147,7 @@ export function RefinementBallotForm({
                 />
               }
               label={
-                <Typography sx={{ pt: 1, overflowWrap: 'anywhere' }}>
+                <Typography sx={{ pt: 1, overflowWrap: "anywhere" }}>
                   {initiative.text}
                 </Typography>
               }

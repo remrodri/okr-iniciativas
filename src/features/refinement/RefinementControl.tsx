@@ -72,7 +72,17 @@ export function RefinementControl({
 
   if (stage === 'REVISION') {
     return (
-      <Paper variant="outlined" sx={{ p: 2 }}>
+      <Paper
+        variant="outlined"
+        sx={{
+          p: 2,
+          // height: { md: "36.5rem", lg: "36.4rem", xl: "49.9rem" },
+          borderRadius: "12px",
+          // overflowY: "auto",
+          background: "rgba(250, 250, 250, 0.71)",
+          border: "1px solid rgba(250, 250, 250,1)",
+        }}
+      >
         <Stack spacing={2}>
           <Typography component="h2" variant="h2">
             Abrir depuración
@@ -183,7 +193,17 @@ export function RefinementControl({
   }
 
   return (
-    <Paper variant="outlined" sx={{ p: 2 }}>
+    <Paper
+      variant="outlined"
+      sx={{
+        p: 2,
+        borderRadius: "12px",
+        overflowY: "auto",
+        background: "rgba(250, 250, 250, 0.71)",
+        border: "1px solid rgba(250, 250, 250,1)",
+        height:"10rem"
+      }}
+    >
       <Stack spacing={1}>
         <Typography component="h2" variant="h2">
           {finalistIds.length} iniciativas finalistas

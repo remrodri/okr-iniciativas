@@ -1,25 +1,25 @@
-﻿import Alert from '@mui/material/Alert';
-import Typography from '@mui/material/Typography';
-import { useEffect, useState } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+﻿import Alert from "@mui/material/Alert";
+import Typography from "@mui/material/Typography";
+import { useEffect, useState } from "react";
+import { useLocation, useParams } from "react-router-dom";
 
-import { FacilitatorPanel } from '@/features/facilitator/FacilitatorPanel';
-import { SessionStageControls } from '@/features/facilitator/SessionStageControls';
-import { BackupExportButton } from '@/features/excel/BackupExportButton';
-import { SharedReportButton } from '@/features/excel/SharedReportButton';
-import type { SessionSnapshot } from '@/domain/ports';
-import { IceConfigForm } from '@/features/ice/IceConfigForm';
-import { RefinementControl } from '@/features/refinement/RefinementControl';
-import { ResultsPanel } from '@/features/results/ResultsPanel';
-import { ReviewPanel } from '@/features/review/ReviewPanel';
-import { getFirebaseRuntime } from '@/infrastructure/firebase/runtime';
-import { changeStageRemote } from '@/infrastructure/firebase/stageRemote';
-import { loadSessionSnapshotRemote } from '@/infrastructure/firebase/snapshotRemote';
-import type { StageAction } from '@/domain/stateMachine';
+import { FacilitatorPanel } from "@/features/facilitator/FacilitatorPanel";
+import { SessionStageControls } from "@/features/facilitator/SessionStageControls";
+import { BackupExportButton } from "@/features/excel/BackupExportButton";
+import { SharedReportButton } from "@/features/excel/SharedReportButton";
+import type { SessionSnapshot } from "@/domain/ports";
+import { IceConfigForm } from "@/features/ice/IceConfigForm";
+import { RefinementControl } from "@/features/refinement/RefinementControl";
+import { ResultsPanel } from "@/features/results/ResultsPanel";
+import { ReviewPanel } from "@/features/review/ReviewPanel";
+import { getFirebaseRuntime } from "@/infrastructure/firebase/runtime";
+import { changeStageRemote } from "@/infrastructure/firebase/stageRemote";
+import { loadSessionSnapshotRemote } from "@/infrastructure/firebase/snapshotRemote";
+import type { StageAction } from "@/domain/stateMachine";
 import {
   saveIceConfigRemote,
   startIceEvaluationRemote,
-} from '@/infrastructure/firebase/iceConfigRemote';
+} from "@/infrastructure/firebase/iceConfigRemote";
 import {
   continueWithIncompleteRemote,
   decideTieRemote,
@@ -28,31 +28,39 @@ import {
   skipRefinementRemote,
   subscribeRefinementControl,
   type RefinementControlData,
-} from '@/infrastructure/firebase/refinementControl';
+} from "@/infrastructure/firebase/refinementControl";
 import {
   correctInitiativeRemote,
   fuseInitiativesRemote,
   requestClarificationRemote,
   subscribeReviewData,
   type ReviewData,
-} from '@/infrastructure/firebase/reviewActions';
+} from "@/infrastructure/firebase/reviewActions";
 import {
   subscribeSessionPanel,
   type SessionPanelData,
-} from '@/infrastructure/firebase/sessionPanel';
+} from "@/infrastructure/firebase/sessionPanel";
 import {
   publishResultsRemote,
   subscribeResults,
   type ResultsData,
-} from '@/infrastructure/firebase/resultsRemote';
+} from "@/infrastructure/firebase/resultsRemote";
 import {
   finalizeRemoteSession,
   reopenRemoteSession,
-} from '@/infrastructure/firebase/sessionLifecycle';
-import { PlaceholderPage } from './PlaceholderPage';
-import { readableFirebaseError, useFirebaseAuthReady } from '@/features/connectivity/useFirebaseAuthReady';
-import { useOnlineStatus } from '@/features/participant/useOnlineStatus';
-import { startFacilitatorPresence } from '@/infrastructure/firebase/presence';
+} from "@/infrastructure/firebase/sessionLifecycle";
+import { PlaceholderPage } from "./PlaceholderPage";
+import {
+  readableFirebaseError,
+  useFirebaseAuthReady,
+} from "@/features/connectivity/useFirebaseAuthReady";
+import { useOnlineStatus } from "@/features/participant/useOnlineStatus";
+import { startFacilitatorPresence } from "@/infrastructure/firebase/presence";
+import Box from "@mui/material/Box";
+import {
+  FacilitatorNavigation,
+  type FacilitatorSection,
+} from "@/features/facilitator/FacilitatorNavigation";
 
 interface FacilitatorLocationState {
   readonly facilitatorToken?: string;
@@ -72,6 +80,8 @@ export function FacilitatorPage() {
     initiatives: [],
     clarifications: [],
   });
+  const [section, setSection] = useState<FacilitatorSection>("ACCESS");
+
   const [refinement, setRefinement] = useState<RefinementControlData>({
     ballots: [],
     finalistCount: null,
@@ -79,22 +89,25 @@ export function FacilitatorPage() {
     tieBreak: null,
     expectedParticipants: 0,
     iceConfig: null,
-    stage: '',
+    stage: "",
   });
   const [results, setResults] = useState<ResultsData>({
-    stage: 'CONFIGURACION',
+    stage: "CONFIGURACION",
     expiresAt: null,
     ranking: [],
     authors: [],
   });
   const [error, setError] = useState<string | null>(null);
-  const [exportSnapshot, setExportSnapshot] = useState<SessionSnapshot | null>(null);
+  const [exportSnapshot, setExportSnapshot] = useState<SessionSnapshot | null>(
+    null,
+  );
   const online = useOnlineStatus();
   const authReady = useFirebaseAuthReady();
 
   useEffect(() => {
     const runtime = getFirebaseRuntime();
-    if (runtime === null || sessionId === undefined || !authReady || !online) return;
+    if (runtime === null || sessionId === undefined || !authReady || !online)
+      return;
     return startFacilitatorPresence({
       firestore: runtime.firestore,
       sessionId,
@@ -105,11 +118,11 @@ export function FacilitatorPage() {
   useEffect(() => {
     const runtime = getFirebaseRuntime();
     if (runtime === null) {
-      setError('Firebase no está configurado en este entorno.');
+      setError("Firebase no está configurado en este entorno.");
       return;
     }
     if (sessionId === undefined) {
-      setError('No se indicó la sesión.');
+      setError("No se indicó la sesión.");
       return;
     }
 
@@ -124,10 +137,21 @@ export function FacilitatorPage() {
 
   useEffect(() => {
     const runtime = getFirebaseRuntime();
-    if (runtime === null || sessionId === undefined || !['RESULTADO_FINAL', 'FINALIZADA'].includes(data?.stage ?? '')) return;
+    if (
+      runtime === null ||
+      sessionId === undefined ||
+      !["RESULTADO_FINAL", "FINALIZADA"].includes(data?.stage ?? "")
+    )
+      return;
     loadSessionSnapshotRemote(runtime.firestore, sessionId)
       .then(setExportSnapshot)
-      .catch((caught: unknown) => setError(caught instanceof Error ? caught.message : 'No se preparó la exportación.'));
+      .catch((caught: unknown) =>
+        setError(
+          caught instanceof Error
+            ? caught.message
+            : "No se preparó la exportación.",
+        ),
+      );
   }, [data?.stage, sessionId]);
 
   useEffect(() => {
@@ -180,13 +204,13 @@ export function FacilitatorPage() {
     publishResultsRemote({
       firestore: runtime.firestore,
       sessionId,
-      actorId: runtime.auth.currentUser?.uid ?? 'facilitator',
+      actorId: runtime.auth.currentUser?.uid ?? "facilitator",
       now: new Date().toISOString(),
     }).catch((caught: unknown) =>
       setError(
         caught instanceof Error
           ? caught.message
-          : 'Error al publicar el resultado.',
+          : "Error al publicar el resultado.",
       ),
     );
   }
@@ -198,11 +222,13 @@ export function FacilitatorPage() {
       firestore: runtime.firestore,
       sessionId,
       action,
-      actorId: runtime.auth.currentUser?.uid ?? 'facilitator',
+      actorId: runtime.auth.currentUser?.uid ?? "facilitator",
       now: new Date().toISOString(),
       auditId: crypto.randomUUID(),
     }).catch((caught: unknown) =>
-      setError(caught instanceof Error ? caught.message : 'Error al cambiar de etapa.'),
+      setError(
+        caught instanceof Error ? caught.message : "Error al cambiar de etapa.",
+      ),
     );
   }
 
@@ -219,7 +245,7 @@ export function FacilitatorPage() {
       setError(
         caught instanceof Error
           ? caught.message
-          : 'Error al finalizar la sesión.',
+          : "Error al finalizar la sesión.",
       ),
     );
   }
@@ -237,7 +263,7 @@ export function FacilitatorPage() {
       setError(
         caught instanceof Error
           ? caught.message
-          : 'Error al reabrir la sesión.',
+          : "Error al reabrir la sesión.",
       ),
     );
   }
@@ -247,7 +273,11 @@ export function FacilitatorPage() {
     const initiative = review.initiatives.find(
       (item) => item.id === initiativeId,
     );
-    if (runtime === null || sessionId === undefined || initiative === undefined) {
+    if (
+      runtime === null ||
+      sessionId === undefined ||
+      initiative === undefined
+    ) {
       return;
     }
     correctInitiativeRemote({
@@ -258,7 +288,7 @@ export function FacilitatorPage() {
       revision: initiative.revision,
       now: new Date().toISOString(),
     }).catch((caught: unknown) =>
-      setError(caught instanceof Error ? caught.message : 'Error al corregir.'),
+      setError(caught instanceof Error ? caught.message : "Error al corregir."),
     );
   }
 
@@ -276,7 +306,7 @@ export function FacilitatorPage() {
       now: new Date().toISOString(),
     }).catch((caught: unknown) =>
       setError(
-        caught instanceof Error ? caught.message : 'Error al solicitar.',
+        caught instanceof Error ? caught.message : "Error al solicitar.",
       ),
     );
   }
@@ -287,7 +317,7 @@ export function FacilitatorPage() {
       return;
     }
     const activeIds = review.initiatives
-      .filter((item) => item.status === 'ACTIVE')
+      .filter((item) => item.status === "ACTIVE")
       .map((item) => item.id);
     const now = new Date().toISOString();
     const action =
@@ -306,7 +336,7 @@ export function FacilitatorPage() {
           });
     action.catch((caught: unknown) =>
       setError(
-        caught instanceof Error ? caught.message : 'Error al abrir depuración.',
+        caught instanceof Error ? caught.message : "Error al abrir depuración.",
       ),
     );
   }
@@ -317,11 +347,11 @@ export function FacilitatorPage() {
       return;
     }
     const activeIds = review.initiatives
-      .filter((item) => item.status === 'ACTIVE')
+      .filter((item) => item.status === "ACTIVE")
       .map((item) => item.id);
     const completeBallots = new Set(
       refinement.ballots
-        .filter((ballot) => ballot.round === 'REFINEMENT')
+        .filter((ballot) => ballot.round === "REFINEMENT")
         .map((ballot) => ballot.participantId),
     ).size;
     const now = new Date().toISOString();
@@ -342,7 +372,7 @@ export function FacilitatorPage() {
           await continueWithIncompleteRemote({
             firestore: runtime.firestore,
             sessionId,
-            actorId: runtime.auth.currentUser?.uid ?? 'facilitator',
+            actorId: runtime.auth.currentUser?.uid ?? "facilitator",
             auditId: crypto.randomUUID(),
             completeBallots,
             expectedParticipants: refinement.expectedParticipants,
@@ -354,7 +384,7 @@ export function FacilitatorPage() {
         setError(
           caught instanceof Error
             ? caught.message
-            : 'Error al cerrar depuración.',
+            : "Error al cerrar depuración.",
         ),
       );
   }
@@ -374,18 +404,18 @@ export function FacilitatorPage() {
       tie: refinement.tieBreak,
       aboveIds: refinement.finalistIds,
       selectedIds,
-      actorId: runtime.auth.currentUser?.uid ?? 'facilitator',
+      actorId: runtime.auth.currentUser?.uid ?? "facilitator",
       auditId: crypto.randomUUID(),
       now: new Date().toISOString(),
     }).catch((caught: unknown) =>
       setError(
-        caught instanceof Error ? caught.message : 'Error al desempatar.',
+        caught instanceof Error ? caught.message : "Error al desempatar.",
       ),
     );
   }
 
   function saveIce(
-    method: 'MULTIPLICATIVE' | 'WEIGHTED',
+    method: "MULTIPLICATIVE" | "WEIGHTED",
     weights: { impact: number; confidence: number; ease: number } | null,
   ) {
     const runtime = getFirebaseRuntime();
@@ -399,12 +429,12 @@ export function FacilitatorPage() {
       weights,
       now: new Date().toISOString(),
     }).catch((caught: unknown) =>
-      setError(caught instanceof Error ? caught.message : 'Error al guardar.'),
+      setError(caught instanceof Error ? caught.message : "Error al guardar."),
     );
   }
 
   function startIce(
-    method: 'MULTIPLICATIVE' | 'WEIGHTED',
+    method: "MULTIPLICATIVE" | "WEIGHTED",
     weights: { impact: number; confidence: number; ease: number } | null,
   ) {
     const runtime = getFirebaseRuntime();
@@ -420,7 +450,7 @@ export function FacilitatorPage() {
       now: new Date().toISOString(),
     }).catch((caught: unknown) =>
       setError(
-        caught instanceof Error ? caught.message : 'Error al iniciar ICE.',
+        caught instanceof Error ? caught.message : "Error al iniciar ICE.",
       ),
     );
   }
@@ -442,115 +472,205 @@ export function FacilitatorPage() {
       mergedText,
       now: new Date().toISOString(),
     }).catch((caught: unknown) =>
-      setError(caught instanceof Error ? caught.message : 'Error al fusionar.'),
+      setError(caught instanceof Error ? caught.message : "Error al fusionar."),
     );
   }
 
   const participantLink =
     data === null
-      ? ''
+      ? ""
       : `${window.location.origin}${window.location.pathname}#/participar/${data.publicCode}`;
 
   return (
-    <PlaceholderPage title="Panel del facilitador">
-      {!online ? (
-        <Alert severity="warning" aria-live="assertive">
-          Sin conexión. El panel no recibirá actualizaciones y las acciones de
-          control permanecerán bloqueadas hasta reconectar.
-        </Alert>
-      ) : null}
-      {error === null ? null : <Alert severity="error">{error}</Alert>}
-      {data === null ? (
-        <Typography aria-live="polite">Cargando sesión…</Typography>
-      ) : (
-        <fieldset
-          disabled={!online}
-          style={{ border: 0, margin: 0, minWidth: 0, padding: 0 }}
-        >
-          <FacilitatorPanel
-            data={data}
-            participantLink={participantLink}
-            {...(state?.facilitatorToken === undefined
-              ? {}
-              : { facilitatorToken: state.facilitatorToken })}
-            {...(state?.participantCredentials === undefined
-              ? {}
-              : { participantCredentials: state.participantCredentials })}
-          />
-          <SessionStageControls stage={data.stage} onChange={changeStage} />
-          {data.stage === 'REVISION' ? (
-            <ReviewPanel
-              initiatives={review.initiatives}
-              clarifications={review.clarifications}
-              onCorrect={correct}
-              onRequestClarification={requestClarification}
-              onFuse={fuse}
-            />
-          ) : null}
-          {[
-            'REVISION',
-            'DEPURACION',
-            'DESEMPATE_DEPURACION',
-            'CONFIGURACION_ICE',
-          ].includes(data.stage) ? (
-            <RefinementControl
-              stage={data.stage}
-              initiativeTexts={Object.fromEntries(
-                review.initiatives.map((item) => [item.id, item.text]),
-              )}
-              availableCount={
-                review.initiatives.filter((item) => item.status === 'ACTIVE')
-                  .length
-              }
-              finalistCount={refinement.finalistCount}
-              finalistIds={refinement.finalistIds}
-              tie={refinement.tieBreak}
-              expectedParticipants={refinement.expectedParticipants}
-              completeBallots={
-                new Set(
-                  refinement.ballots
-                    .filter((ballot) => ballot.round === 'REFINEMENT')
-                    .map((ballot) => ballot.participantId),
-                ).size
-              }
-              onOpen={openRefinement}
-              onResolve={resolveRefinement}
-              onDecide={decideTie}
-            />
-          ) : null}
-          {['CONFIGURACION_ICE', 'EVALUACION_ICE'].includes(data.stage) ? (
-            <IceConfigForm
-              initialConfig={refinement.iceConfig}
-              locked={data.stage === 'EVALUACION_ICE'}
-              onSave={saveIce}
-              onStart={startIce}
-            />
-          ) : null}
-          {['EVALUACION_ICE', 'RESULTADO_FINAL', 'FINALIZADA'].includes(
-            data.stage,
-          ) ? (
-            <ResultsPanel
-              stage={data.stage}
-              ranking={results.ranking}
-              initiativeTexts={Object.fromEntries(
-                review.initiatives.map((item) => [item.id, item.text]),
-              )}
-              authors={results.authors}
-              expiresAt={results.expiresAt}
-              onPublish={publishResults}
-              onFinalize={finalize}
-              onReopen={reopen}
-            />
-          ) : null}
-          {exportSnapshot === null ? null : (
-            <>
-              <BackupExportButton snapshot={exportSnapshot} />
-              <SharedReportButton snapshot={exportSnapshot} />
-            </>
-          )}
-        </fieldset>
-      )}
-    </PlaceholderPage>
+    <Box
+      sx={{
+        flexGrow: 1,
+        display: "flex",
+        flexDirection: "column",
+        padding: "1rem",
+        background: "rgba(0, 0, 0, 0.48)",
+        borderRadius: "12px",
+        boxShadow: "0 4px 30px rgba(0, 0, 0, 0.6)",
+        backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
+        border: "1px solid rgba(0, 0, 0, 0.4)",
+        color: "white",
+      }}
+    >
+      <PlaceholderPage title="Panel del facilitador">
+        {!online ? (
+          <Alert severity="warning" aria-live="assertive">
+            Sin conexión. El panel no recibirá actualizaciones y las acciones de
+            control permanecerán bloqueadas hasta reconectar.
+          </Alert>
+        ) : null}
+        {error === null ? null : <Alert severity="error">{error}</Alert>}
+        {data === null ? (
+          <Typography aria-live="polite" sx={{ color: "white" }}>
+            Cargando sesión…
+          </Typography>
+        ) : (
+          <fieldset
+            disabled={!online}
+            style={{
+              flexGrow: 1,
+              border: 0,
+              margin: 0,
+              minWidth: 0,
+              padding: 0,
+              width: "100%",
+              // background: "rgba(0, 0, 255, 0.48)",
+              display: "flex",
+            }}
+          >
+            <Box
+              sx={{
+                flexGrow: 1,
+                display: "flex",
+                flexDirection: { xs: "column", md: "row" },
+                alignItems: "flex-start",
+                gap: 2,
+                width: "100%",
+                // background: "rgba(255, 0, 0, 0.48)",
+              }}
+            >
+              <FacilitatorNavigation
+                selected={section}
+                onSelect={setSection}
+                hasPersonalAccess={state?.participantCredentials !== undefined}
+                hasRecovery={state?.facilitatorToken !== undefined}
+              />
+              <Box sx={{ flex: 1, minWidth: 0, width: "100%" }}>
+                {section !== "STAGE" ? (
+                  <FacilitatorPanel
+                    section={section}
+                    data={data}
+                    participantLink={participantLink}
+                    {...(state?.facilitatorToken === undefined
+                      ? {}
+                      : { facilitatorToken: state.facilitatorToken })}
+                    {...(state?.participantCredentials === undefined
+                      ? {}
+                      : {
+                          participantCredentials: state.participantCredentials,
+                        })}
+                  />
+                ) : (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 2,
+                      height: { md: "36.5rem", lg: "36.4rem", xl: "49.9rem" },
+                      // borderRadius: "12px",
+                      overflowY: "auto",
+                      // background: "rgba(250, 250, 250, 0.71)",
+                      // border: "1px solid rgba(250, 250, 250,1)",
+                    }}
+                  >
+                    <SessionStageControls
+                      stage={data.stage}
+                      onChange={changeStage}
+                    />
+                    {data.stage === "REVISION" ? (
+                      <ReviewPanel
+                        initiatives={review.initiatives}
+                        clarifications={review.clarifications}
+                        onCorrect={correct}
+                        onRequestClarification={requestClarification}
+                        onFuse={fuse}
+                      />
+                    ) : null}
+                    {[
+                      "REVISION",
+                      "DEPURACION",
+                      "DESEMPATE_DEPURACION",
+                      "CONFIGURACION_ICE",
+                    ].includes(data.stage) ? (
+                      <RefinementControl
+                        stage={data.stage}
+                        initiativeTexts={Object.fromEntries(
+                          review.initiatives.map((item) => [
+                            item.id,
+                            item.text,
+                          ]),
+                        )}
+                        availableCount={
+                          review.initiatives.filter(
+                            (item) => item.status === "ACTIVE",
+                          ).length
+                        }
+                        finalistCount={refinement.finalistCount}
+                        finalistIds={refinement.finalistIds}
+                        tie={refinement.tieBreak}
+                        expectedParticipants={refinement.expectedParticipants}
+                        completeBallots={
+                          new Set(
+                            refinement.ballots
+                              .filter((ballot) => ballot.round === "REFINEMENT")
+                              .map((ballot) => ballot.participantId),
+                          ).size
+                        }
+                        onOpen={openRefinement}
+                        onResolve={resolveRefinement}
+                        onDecide={decideTie}
+                      />
+                    ) : null}
+                    {["CONFIGURACION_ICE", "EVALUACION_ICE"].includes(
+                      data.stage,
+                    ) ? (
+                      <IceConfigForm
+                        initialConfig={refinement.iceConfig}
+                        locked={data.stage === "EVALUACION_ICE"}
+                        onSave={saveIce}
+                        onStart={startIce}
+                      />
+                    ) : null}
+                    {[
+                      "EVALUACION_ICE",
+                      "RESULTADO_FINAL",
+                      "FINALIZADA",
+                    ].includes(data.stage) ? (
+                      <ResultsPanel
+                        stage={data.stage}
+                        ranking={results.ranking}
+                        initiativeTexts={Object.fromEntries(
+                          review.initiatives.map((item) => [
+                            item.id,
+                            item.text,
+                          ]),
+                        )}
+                        authors={results.authors}
+                        expiresAt={results.expiresAt}
+                        onPublish={publishResults}
+                        onFinalize={finalize}
+                        onReopen={reopen}
+                      />
+                    ) : null}
+                    {exportSnapshot === null ? null : (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: 1,
+                          borderRadius: "12px",
+                          // overflowY: "auto",
+                          background: "rgba(250, 250, 250, 0.71)",
+                              border: "1px solid rgba(250, 250, 250,1)",
+                          padding: 2,
+                        }}
+                      >
+                        <BackupExportButton snapshot={exportSnapshot} />
+                        <SharedReportButton snapshot={exportSnapshot} />
+                      </Box>
+                    )}
+                  </Box>
+                )}
+              </Box>
+            </Box>
+          </fieldset>
+        )}
+      </PlaceholderPage>
+    </Box>
   );
 }
-

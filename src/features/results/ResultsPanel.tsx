@@ -58,10 +58,20 @@ export function ResultsPanel({
   }
 
   return (
-    <Paper variant="outlined" sx={{ p: 2 }}>
+    <Paper
+      variant="outlined"
+      sx={{
+        p: 2,
+        borderRadius: "12px",
+        overflowY: "auto",
+        background: "rgba(250, 250, 250, 0.71)",
+        border: "1px solid rgba(250, 250, 250,1)",
+        height:{lg:"31rem", xl:"45rem"}
+      }}
+    >
       <Stack spacing={2}>
         <Typography component="h2" variant="h2">
-          {stage === 'FINALIZADA' ? 'Sesión finalizada' : 'Resultado final'}
+          {stage === "FINALIZADA" ? "Sesión finalizada" : "Resultado final"}
         </Typography>
 
         {ranking.length === 0 ? (
@@ -69,7 +79,7 @@ export function ResultsPanel({
             Aún no hay ranking publicado.
           </Typography>
         ) : (
-          <Box component="ol" sx={{ listStyle: 'none', m: 0, p: 0 }}>
+          <Box component="ol" sx={{ listStyle: "none", m: 0, p: 0 }}>
             <Stack spacing={2}>
               {ranking.map((entry) => {
                 const tied = (positionCounts.get(entry.position) ?? 0) > 1;
@@ -82,7 +92,7 @@ export function ResultsPanel({
                       <Stack
                         direction="row"
                         spacing={1}
-                        sx={{ alignItems: 'center', flexWrap: 'wrap' }}
+                        sx={{ alignItems: "center", flexWrap: "wrap" }}
                       >
                         <Typography component="span" sx={{ fontWeight: 600 }}>
                           Puesto {entry.position}
@@ -94,8 +104,8 @@ export function ResultsPanel({
                         </Typography>
                       </Stack>
                       <Typography variant="body2" color="text.secondary">
-                        Impacto {formatNumber(entry.impactMedian)} · Confianza{' '}
-                        {formatNumber(entry.confidenceMedian)} · Facilidad{' '}
+                        Impacto {formatNumber(entry.impactMedian)} · Confianza{" "}
+                        {formatNumber(entry.confidenceMedian)} · Facilidad{" "}
                         {formatNumber(entry.easeMedian)}
                       </Typography>
                       <Typography>
@@ -105,7 +115,7 @@ export function ResultsPanel({
                       entryAuthors !== undefined &&
                       entryAuthors.names.length > 0 ? (
                         <Typography variant="body2">
-                          Autoría: {entryAuthors.names.join(', ')}
+                          Autoría: {entryAuthors.names.join(", ")}
                         </Typography>
                       ) : null}
                     </Stack>
@@ -116,19 +126,19 @@ export function ResultsPanel({
           </Box>
         )}
 
-        {stage === 'EVALUACION_ICE' ? (
+        {stage === "EVALUACION_ICE" ? (
           <Button variant="contained" onClick={onPublish}>
             Publicar resultado final
           </Button>
         ) : null}
 
-        {stage === 'RESULTADO_FINAL' ? (
+        {stage === "RESULTADO_FINAL" ? (
           <Button variant="contained" onClick={onFinalize}>
             Finalizar sesión
           </Button>
         ) : null}
 
-        {stage === 'FINALIZADA' ? (
+        {stage === "FINALIZADA" ? (
           <Stack spacing={1}>
             <Typography>
               Periodo de recuperación de 24 horas. Puedes reabrir la sesión

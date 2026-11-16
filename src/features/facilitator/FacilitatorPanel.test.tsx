@@ -39,6 +39,7 @@ describe('panel del facilitador', () => {
   it('separa el acceso público de la recuperación privada', () => {
     render(
       <FacilitatorPanel
+        section="ACCESS"
         data={data}
         participantLink="https://example.test/#/participar/ABCD2345"
         facilitatorToken="token-privado"
@@ -48,16 +49,25 @@ describe('panel del facilitador', () => {
     expect(
       screen.getByRole('heading', { name: 'Acceso de participantes' }),
     ).toBeInTheDocument();
+    expect(screen.getByText('ABCD2345')).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: 'QR público de la sesión' }),
+    ).toBeInTheDocument();
+    cleanup();
+    render(
+      <FacilitatorPanel
+        section="RECOVERY"
+        data={data}
+        participantLink="https://example.test/#/participar/ABCD2345"
+        facilitatorToken="token-privado"
+      />,
+    );
     expect(
       screen.getByRole('heading', {
         name: 'Recuperación privada del facilitador',
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText('ABCD2345')).toBeInTheDocument();
     expect(screen.getByText('token-privado')).toBeInTheDocument();
-    expect(
-      screen.getByRole('img', { name: 'QR público de la sesión' }),
-    ).toBeInTheDocument();
     expect(
       screen.getByRole('img', { name: 'QR privado de recuperación' }),
     ).toBeInTheDocument();
@@ -66,6 +76,7 @@ describe('panel del facilitador', () => {
   it('muestra alias, conexión y avance', () => {
     render(
       <FacilitatorPanel
+        section="PARTICIPANTS"
         data={data}
         participantLink="https://example.test/#/participar/ABCD2345"
       />,
