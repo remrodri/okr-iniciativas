@@ -66,17 +66,22 @@ export function ReviewPanel({
   return (
     <Stack
       spacing={2}
-      sx={
-        {
-          // height: { md: "36.5rem", lg: "36.4rem", xl: "49.9rem" },
-          // borderRadius: "12px",
-          // overflowY: "auto",
-          // background: "rgba(250, 250, 250, 0.71)",
-          // border: "1px solid rgba(250, 250, 250,1)",
-        }
-      }
+      sx={{
+        // height: { md: "36.5rem", lg: "36.4rem", xl: "49.9rem" },
+        // borderRadius: "12px",
+        // overflowY: "auto",
+        // background: "rgba(250, 250, 250, 0.71)",
+        // border: "1px solid rgba(250, 250, 250,1)",
+        p: "1rem",
+      }}
     >
-      <Alert severity="info">
+      <Alert
+        severity="info"
+        sx={{
+          borderRadius: "12px",
+          // boxShadow: "0 4px 30px rgb(0, 0, 0)",
+        }}
+      >
         Revisión ciega: la autoría permanece oculta durante la revisión.
       </Alert>
 
@@ -105,8 +110,9 @@ export function ReviewPanel({
               p: 2,
               borderRadius: "12px",
               overflowY: "auto",
-              background: "rgba(250, 250, 250, 0.71)",
-              border: "1px solid rgba(250, 250, 250,1)",
+              background: "rgb(255, 250, 250)",
+              border: "1px solid rgb(255, 255, 255)",
+              // boxShadow: "0 4px 30px rgb(0, 0, 0)",
             }}
           >
             <Stack spacing={2}>
@@ -213,8 +219,8 @@ export function ReviewPanel({
           // height: { md: "36.5rem", lg: "36.4rem", xl: "49.9rem" },
           borderRadius: "12px",
           // overflowY: "auto",
-          background: "rgba(250, 250, 250, 0.71)",
-          border: "1px solid rgba(250, 250, 250,1)",
+          background: "rgb(255, 250, 250)",
+          border: "1px solid rgb(255, 255, 255)",
         }}
       >
         <Stack spacing={2}>

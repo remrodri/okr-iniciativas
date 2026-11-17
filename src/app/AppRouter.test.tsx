@@ -15,7 +15,7 @@ describe('rutas hash', () => {
   });
 
   it.each([
-    ['#/', 'Inicio'],
+    ['#/', 'INICIO'],
     ['#/facilitador/nueva', 'Nueva sesión'],
     ['#/facilitador/abc123', 'Panel del facilitador'],
     ['#/participar', 'Acceso de participante'],

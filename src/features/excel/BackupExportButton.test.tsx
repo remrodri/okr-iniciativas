@@ -40,7 +40,7 @@ describe('BackupExportButton', () => {
     expect(screen.getByText('Generando respaldo: 50 %')).toBeInTheDocument();
 
     finish?.(new Uint8Array([1, 2, 3]));
-    expect(await screen.findByText('Respaldo descargado.')).toBeInTheDocument();
-    expect(download).toHaveBeenCalledOnce();
+    await vi.waitFor(() => expect(download).toHaveBeenCalledOnce());
+    expect(screen.queryByText('Respaldo descargado.')).not.toBeInTheDocument();
   });
 });

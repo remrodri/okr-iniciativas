@@ -1,16 +1,17 @@
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Paper from '@mui/material/Paper';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-import { useState } from 'react';
+import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Paper from "@mui/material/Paper";
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
+import { useState } from "react";
 
-import { createIceConfig } from '@/domain/iceConfig';
-import type { IceConfig, IceMethod, IceWeights } from '@/domain/types';
+import { createIceConfig } from "@/domain/iceConfig";
+import type { IceConfig, IceMethod, IceWeights } from "@/domain/types";
+import { Divider } from "@mui/material";
 
 export interface IceConfigFormProps {
   readonly initialConfig: IceConfig | null;
@@ -26,7 +27,7 @@ export function IceConfigForm({
   onStart,
 }: IceConfigFormProps) {
   const [method, setMethod] = useState<IceMethod>(
-    initialConfig?.method ?? 'MULTIPLICATIVE',
+    initialConfig?.method ?? "MULTIPLICATIVE",
   );
   const [impact, setImpact] = useState(
     String((initialConfig?.weights?.impact ?? 0) * 100),
@@ -46,17 +47,20 @@ export function IceConfigForm({
   };
   const total = Number(impact) + Number(confidence) + Number(ease);
 
-  function validate(): { method: IceMethod; weights: IceWeights | null } | null {
+  function validate(): {
+    method: IceMethod;
+    weights: IceWeights | null;
+  } | null {
     try {
       const config = createIceConfig({
         method,
-        weights: method === 'WEIGHTED' ? weights : null,
+        weights: method === "WEIGHTED" ? weights : null,
       });
       setError(null);
       return { method: config.method, weights: config.weights };
     } catch (caught) {
       setError(
-        caught instanceof Error ? caught.message : 'Configuración inválida.',
+        caught instanceof Error ? caught.message : "Configuración inválida.",
       );
       return null;
     }
@@ -83,15 +87,16 @@ export function IceConfigForm({
         p: 2,
         borderRadius: "12px",
         // overflowY: "auto",
-        background: "rgba(250, 250, 250, 0.71)",
+        background: "rgb(255, 250, 250)",
         border: "1px solid rgba(250, 250, 250,1)",
-        height: {lg: "25.6rem", xl: "25.7rem" },
+        // height: {lg: "25.6rem", xl: "25.7rem" },
       }}
     >
       <Stack spacing={2}>
         <Typography component="h2" variant="h2">
           Configuración ICE
         </Typography>
+        <Divider />
         {locked ? (
           <Alert severity="info">
             El método ICE está bloqueado porque la evaluación ya comenzó.

@@ -18,7 +18,7 @@ describe('App', () => {
       </AppThemeProvider>,
     );
 
-    expect(screen.getByRole('heading', { name: 'Inicio' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'INICIO' })).toBeInTheDocument();
     expect(screen.getByText('OKR Iniciativas')).toBeInTheDocument();
   });
 });

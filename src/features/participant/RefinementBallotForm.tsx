@@ -1,11 +1,11 @@
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import { useState } from 'react';
+import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
+import Checkbox from "@mui/material/Checkbox";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import { useState } from "react";
 
 export interface BallotInitiative {
   readonly id: string;
@@ -35,11 +35,11 @@ export function RefinementBallotForm({
   submitted,
   busy = false,
   error = null,
-  title = 'Selecciona las iniciativas prioritarias',
-  reviewTitle = 'Revisa tu voto',
-  reviewButtonLabel = 'Revisar voto',
-  confirmButtonLabel = 'Confirmar voto',
-  confirmedLabel = 'Voto confirmado',
+  title = "Selecciona las iniciativas prioritarias",
+  reviewTitle = "Revisa tu voto",
+  reviewButtonLabel = "Revisar voto",
+  confirmButtonLabel = "Confirmar voto",
+  confirmedLabel = "Voto confirmado",
   onSelectionChange,
   onSubmit,
 }: RefinementBallotFormProps) {
@@ -76,12 +76,12 @@ export function RefinementBallotForm({
         sx={{
           borderRadius: "12px",
           // overflowY: "auto",
-          background: "rgba(250, 250, 250, 0.71)",
+          background: "rgba(255, 250, 250, 1)",
           border: "1px solid rgba(250, 250, 250,1)",
           padding: 2,
         }}
       >
-        <Typography component="h2" variant="h2">
+        <Typography component="h2" variant="h2" sx={{ color: "black" }}>
           {reviewTitle}
         </Typography>
         <Typography color="text.secondary" sx={{ color: "black" }}>
@@ -117,7 +117,7 @@ export function RefinementBallotForm({
         maxWidth: "100%",
         borderRadius: "12px",
         // overflowY: "auto",
-        background: "rgba(250, 250, 250, 0.71)",
+        background: "rgb(255, 250, 250)",
         border: "1px solid rgba(250, 250, 250,1)",
         padding: 2,
         color: "black",

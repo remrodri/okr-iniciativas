@@ -1,13 +1,9 @@
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
+import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 
-export type ParticipantSyncState =
-  | 'IDLE'
-  | 'SENDING'
-  | 'CONFIRMED'
-  | 'ERROR';
+export type ParticipantSyncState = "IDLE" | "SENDING" | "CONFIRMED" | "ERROR";
 
 interface ParticipantSyncStatusProps {
   readonly online: boolean;
@@ -26,18 +22,31 @@ export function ParticipantSyncStatus({
 }: ParticipantSyncStatusProps) {
   return (
     <Stack spacing={1} aria-live="polite">
-      <Typography variant="body2" color="text.secondary">
+      <Typography
+        variant="body2"
+        // color="text.secondary"
+        sx={{
+          background: "rgb(255, 255, 255)",
+          p: 1,
+          borderRadius: "10px",
+          border: "1px solid rgba(248, 248, 248, 0.4)",
+          // boxShadow: "0 4px 30px rgba(255, 255, 255, 0.54)",
+          color: "black",
+        }}
+      >
         Etapa actual: {stageLabel}
       </Typography>
+
       {!online ? (
         <Alert severity="warning">
           Sin conexión. Tu borrador permanece guardado en este dispositivo.
         </Alert>
-      ) : status === 'SENDING' ? (
+      ) : status === "SENDING" ? (
         <Alert severity="info">Enviando a Firebase…</Alert>
-      ) : status === 'CONFIRMED' ? (
-        <Alert severity="success">Envío confirmado por Firebase.</Alert>
-      ) : status === 'ERROR' ? (
+      ) : status === "CONFIRMED" ? (
+            // <Alert severity="success">Envío confirmado por Firebase.</Alert>
+      <></>
+      ) : status === "ERROR" ? (
         <Alert
           severity="error"
           action={
@@ -53,7 +62,8 @@ export function ParticipantSyncStatus({
           Borrador guardado localmente; todavía no es un envío confirmado.
         </Alert>
       ) : (
-        <Alert severity="info">Conectado. Esperando actividad.</Alert>
+                  // <Alert severity="info">Conectado. Esperando actividad.</Alert>
+                  <></>
       )}
     </Stack>
   );

@@ -61,6 +61,7 @@ import {
   FacilitatorNavigation,
   type FacilitatorSection,
 } from "@/features/facilitator/FacilitatorNavigation";
+import { Divider } from "@mui/material";
 
 interface FacilitatorLocationState {
   readonly facilitatorToken?: string;
@@ -488,7 +489,7 @@ export function FacilitatorPage() {
         display: "flex",
         flexDirection: "column",
         padding: "1rem",
-        background: "rgba(0, 0, 0, 0.48)",
+        // background: "rgba(0, 0, 0, 0.48)",
         borderRadius: "12px",
         boxShadow: "0 4px 30px rgba(0, 0, 0, 0.6)",
         backdropFilter: "blur(10px)",
@@ -560,12 +561,14 @@ export function FacilitatorPage() {
                     sx={{
                       display: "flex",
                       flexDirection: "column",
-                      gap: 2,
+                      // gap: 2,
                       height: { md: "36.5rem", lg: "36.4rem", xl: "49.9rem" },
-                      // borderRadius: "12px",
+                      borderRadius: "12px",
                       overflowY: "auto",
+                      boxShadow: "0 4px 30px rgb(0, 0, 0)",
                       // background: "rgba(250, 250, 250, 0.71)",
-                      // border: "1px solid rgba(250, 250, 250,1)",
+                          // border: "1px solid rgba(250, 250, 250,1)",
+                      p:2
                     }}
                   >
                     <SessionStageControls
@@ -587,65 +590,83 @@ export function FacilitatorPage() {
                       "DESEMPATE_DEPURACION",
                       "CONFIGURACION_ICE",
                     ].includes(data.stage) ? (
-                      <RefinementControl
-                        stage={data.stage}
-                        initiativeTexts={Object.fromEntries(
-                          review.initiatives.map((item) => [
-                            item.id,
-                            item.text,
-                          ]),
-                        )}
-                        availableCount={
-                          review.initiatives.filter(
-                            (item) => item.status === "ACTIVE",
-                          ).length
-                        }
-                        finalistCount={refinement.finalistCount}
-                        finalistIds={refinement.finalistIds}
-                        tie={refinement.tieBreak}
-                        expectedParticipants={refinement.expectedParticipants}
-                        completeBallots={
-                          new Set(
-                            refinement.ballots
-                              .filter((ballot) => ballot.round === "REFINEMENT")
-                              .map((ballot) => ballot.participantId),
-                          ).size
-                        }
-                        onOpen={openRefinement}
-                        onResolve={resolveRefinement}
-                        onDecide={decideTie}
-                      />
+                      <Box
+                        sx={{
+                        }}
+                      >
+                        <RefinementControl
+                          stage={data.stage}
+                          initiativeTexts={Object.fromEntries(
+                            review.initiatives.map((item) => [
+                              item.id,
+                              item.text,
+                            ]),
+                          )}
+                          availableCount={
+                            review.initiatives.filter(
+                              (item) => item.status === "ACTIVE",
+                            ).length
+                          }
+                          finalistCount={refinement.finalistCount}
+                          finalistIds={refinement.finalistIds}
+                          tie={refinement.tieBreak}
+                          expectedParticipants={refinement.expectedParticipants}
+                          completeBallots={
+                            new Set(
+                              refinement.ballots
+                                .filter(
+                                  (ballot) => ballot.round === "REFINEMENT",
+                                )
+                                .map((ballot) => ballot.participantId),
+                            ).size
+                          }
+                          onOpen={openRefinement}
+                          onResolve={resolveRefinement}
+                          onDecide={decideTie}
+                        />
+                      </Box>
                     ) : null}
                     {["CONFIGURACION_ICE", "EVALUACION_ICE"].includes(
                       data.stage,
                     ) ? (
-                      <IceConfigForm
-                        initialConfig={refinement.iceConfig}
-                        locked={data.stage === "EVALUACION_ICE"}
-                        onSave={saveIce}
-                        onStart={startIce}
-                      />
+                      <Box sx={{  mt:2}}>
+                        <IceConfigForm
+                          initialConfig={refinement.iceConfig}
+                          locked={data.stage === "EVALUACION_ICE"}
+                          onSave={saveIce}
+                          onStart={startIce}
+                        />
+                      </Box>
                     ) : null}
                     {[
                       "EVALUACION_ICE",
                       "RESULTADO_FINAL",
                       "FINALIZADA",
                     ].includes(data.stage) ? (
-                      <ResultsPanel
-                        stage={data.stage}
-                        ranking={results.ranking}
-                        initiativeTexts={Object.fromEntries(
-                          review.initiatives.map((item) => [
-                            item.id,
-                            item.text,
-                          ]),
-                        )}
-                        authors={results.authors}
-                        expiresAt={results.expiresAt}
-                        onPublish={publishResults}
-                        onFinalize={finalize}
-                        onReopen={reopen}
-                      />
+                      <Box
+                        sx={{
+                          // pt: 2,
+                          // pl: 2,
+                          // pr: 2,
+                          // pb: 2,
+                        }}
+                      >
+                        <ResultsPanel
+                          stage={data.stage}
+                          ranking={results.ranking}
+                          initiativeTexts={Object.fromEntries(
+                            review.initiatives.map((item) => [
+                              item.id,
+                              item.text,
+                            ]),
+                          )}
+                          authors={results.authors}
+                          expiresAt={results.expiresAt}
+                          onPublish={publishResults}
+                          onFinalize={finalize}
+                          onReopen={reopen}
+                        />
+                      </Box>
                     ) : null}
                     {exportSnapshot === null ? null : (
                       <Box
@@ -655,13 +676,40 @@ export function FacilitatorPage() {
                           gap: 1,
                           borderRadius: "12px",
                           // overflowY: "auto",
-                          background: "rgba(250, 250, 250, 0.71)",
-                              border: "1px solid rgba(250, 250, 250,1)",
-                          padding: 2,
+                          background: "rgb(255, 250, 250)",
+                          border: "1px solid rgba(250, 250, 250,1)",
+                              padding: 2,
+                          mt:2
                         }}
                       >
-                        <BackupExportButton snapshot={exportSnapshot} />
-                        <SharedReportButton snapshot={exportSnapshot} />
+                        <Box
+                          sx={{
+                            flexGrow: 1,
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 2,
+                          }}
+                        >
+                          <Typography
+                            component="h2"
+                            variant="h2"
+                            sx={{ color: "black" }}
+                          >
+                            Respaldos
+                          </Typography>
+                          <Typography variant="body1" sx={{ color: "black" }}>
+                            El respaldo del facilitador conserva toda la
+                            información necesaria para recuperar el proceso,
+                            mientras que el archivo para participantes permite
+                            compartir los resultados sin revelar votos ni
+                            calificaciones individuales.
+                          </Typography>
+                          <Divider />
+                          <Box sx={{ flexGrow: 1, display: "flex", gap: 2 }}>
+                            <BackupExportButton snapshot={exportSnapshot} />
+                            <SharedReportButton snapshot={exportSnapshot} />
+                          </Box>
+                        </Box>
                       </Box>
                     )}
                   </Box>

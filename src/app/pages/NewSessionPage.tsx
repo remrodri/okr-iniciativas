@@ -75,9 +75,9 @@ export function NewSessionPage() {
         textAlign: "center",
         // padding: "1rem",
         // gap: "1rem",
-        background: "rgba(0, 0, 0, 0.48)",
+        // background: "rgba(0, 0, 0, 0.48)",
         borderRadius: "10px",
-        boxShadow: "0 4px 30px rgba(0, 0, 0, 0.6)",
+        boxShadow: "0 4px 30px rgb(0, 0, 0)",
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
         border: "1px solid rgba(0, 0, 0, 0.4)",
@@ -85,9 +85,9 @@ export function NewSessionPage() {
     >
       <Box
         sx={{
-          background: "rgba(250, 250, 250, 0.71)",
+          background: "rgb(250, 250, 250)",
           borderRadius: "10px",
-          boxShadow: "0 4px 30px rgba(0, 0, 0, 0.6)",
+          boxShadow: "0 4px 30px rgb(0, 0, 0)",
           backdropFilter: "blur(10px)",
           WebkitBackdropFilter: "blur(10px)",
           border: "1px solid rgba(217, 217, 217, 0.4)",

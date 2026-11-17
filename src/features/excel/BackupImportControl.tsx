@@ -5,6 +5,8 @@ import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IndexedDbSessionRepository } from "@/infrastructure/browser-storage/indexedDbSessionRepository";
 import { importBackupWorkbook } from "@/infrastructure/workbook/backupImport";
+import DocumentScannerIcon from "@mui/icons-material/DocumentScanner";
+
 
 export function BackupImportControl() {
   const input = useRef<HTMLInputElement>(null);
@@ -48,6 +50,7 @@ export function BackupImportControl() {
           // borderColor: "rgba(8, 145, 17, 0.56)",
         }}
       >
+        <DocumentScannerIcon sx={{ mr:1}}/>
         Importar respaldo Excel
       </Button>
       {error === null ? null : <Alert severity="error">{error}</Alert>}

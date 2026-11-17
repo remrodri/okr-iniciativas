@@ -46,10 +46,7 @@ import {
   useFirebaseAuthReady,
   readableFirebaseError,
 } from "@/features/connectivity/useFirebaseAuthReady";
-import {
-  isPresenceActive,
-  startParticipantPresence,
-} from "@/infrastructure/firebase/presence";
+import { startParticipantPresence } from "@/infrastructure/firebase/presence";
 import { Box } from "@mui/material";
 
 interface ParticipantLocationState {
@@ -74,7 +71,6 @@ export function ParticipantSessionPage() {
   const [lastConfirmed, setLastConfirmed] = useState(false);
   const online = useOnlineStatus();
   const authReady = useFirebaseAuthReady();
-  const [presenceNow, setPresenceNow] = useState(() => Date.now());
   const identity = locationState?.identity;
   const activeSessionId = localState?.sessionId;
   const activeParticipantId = localState?.participantId;
@@ -120,11 +116,6 @@ export function ParticipantSessionPage() {
       onError: (caught) => setError(readableFirebaseError(caught)),
     });
   }, [activeParticipantId, activeSessionId, authReady, online]);
-
-  useEffect(() => {
-    const timer = window.setInterval(() => setPresenceNow(Date.now()), 15_000);
-    return () => window.clearInterval(timer);
-  }, []);
 
   useEffect(() => {
     setLastConfirmed(false);
@@ -620,14 +611,6 @@ export function ParticipantSessionPage() {
       : lastConfirmed || currentStageConfirmed()
         ? "CONFIRMED"
         : "IDLE";
-  const facilitatorPresenceKnown =
-    workspace?.facilitatorLastSeenAtMillis !== null &&
-    workspace?.facilitatorLastSeenAtMillis !== undefined;
-  const facilitatorOnline =
-    workspace !== null &&
-    workspace.facilitatorConnected &&
-    isPresenceActive(workspace.facilitatorLastSeenAtMillis, presenceNow);
-
   return (
     <Box
       sx={{
@@ -635,9 +618,9 @@ export function ParticipantSessionPage() {
         display: "flex",
         flexDirection: "column",
         padding: "1rem",
-        background: "rgba(0, 0, 0, 0.48)",
+        // background: "rgba(0, 0, 0, 0.48)",
         borderRadius: "12px",
-        boxShadow: "0 4px 30px rgba(0, 0, 0, 0.6)",
+        boxShadow: "0 4px 30px rgb(0, 0, 0)",
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
         border: "1px solid rgba(0, 0, 0, 0.4)",
@@ -649,22 +632,29 @@ export function ParticipantSessionPage() {
         sx={{
           // flexGrow: 1,
           display: "flex",
-          width: "40rem",
+          width: "42rem",
+          // background: "black",
+          p: 2,
+          border: "1px solid rgba(0, 0, 0, 0.4)",
+          borderRadius: "12px",
+          // backdropFilter: "blur(10px)",
+          // WebkitBackdropFilter: "blur(10px)",
+          boxShadow: "0 4px 30px rgb(0, 0, 0)",
         }}
       >
         <PlaceholderPage title="Sesión de participante">
           {hasIdentity ? (
-            <Stack spacing={2}>
+            <Stack spacing={2} sx={{}}>
               <Paper
                 variant="outlined"
                 sx={{
-                  p: 2,
+                  // p: 2,
                   overflowWrap: "anywhere",
                   borderRadius: "12px",
                   overflowY: "auto",
-                  background: "rgba(250, 250, 250, 0.71)",
-                  border: "1px solid rgba(250, 250, 250,1)",
-                  boxShadow: "0 4px 30px rgba(0, 0, 0, 0.6)",
+                  // background: "rgba(255, 255, 255, 0.71)",
+                  // border: "1px solid rgba(250, 250, 250,1)",
+                  // boxShadow: "0 4px 30px rgba(0, 0, 0, 0.6)",
                   // width: "40rem",                display: "flex",
                   flexDirection: "column",
                   justifyContent: "center",
@@ -676,6 +666,7 @@ export function ParticipantSessionPage() {
                     {
                       // height: { md: "36.5rem", lg: "36.4rem", xl: "49.9rem" },
                       // width: "40rem",
+                      p:2
                     }
                   }
                 >
@@ -701,13 +692,6 @@ export function ParticipantSessionPage() {
                 }
                 onRetry={retryPending}
               />
-              {facilitatorPresenceKnown && !facilitatorOnline ? (
-                <Alert severity="warning" aria-live="polite">
-                  El facilitador está temporalmente desconectado. Puedes
-                  continuar preparando tu actividad; los cambios de etapa
-                  esperarán su regreso.
-                </Alert>
-              ) : null}
               {workspace === null ? (
                 <Typography aria-live="polite">Cargando actividad…</Typography>
               ) : workspace.stage === "BRAINSTORMING" ||

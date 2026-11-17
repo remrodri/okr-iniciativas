@@ -116,9 +116,9 @@ export function FacilitatorNavigation({
           slotProps={{
             paper: {
               sx: {
-                bgcolor: "rgba(255,255,255,0.71)",
+                // bgcolor: "rgb(255, 250, 250)",
                 // backdropFilter: "blur(16px)",
-                border: "1px solid rgba(255,255,255,1)",
+                // border: "1px solid rgba(255,255,255,1)",
               },
             },
           }}
@@ -138,10 +138,11 @@ export function FacilitatorNavigation({
         "& .MuiDrawer-paper": {
           position: "relative",
           borderRadius: 3,
-          bgcolor: "rgba(255,255,255,0.71)",
+          bgcolor: "rgb(255, 250, 250)",
           border: "1px solid rgba(255,255,255,1)",
-          backdropFilter: "blur(16px)",
+          // backdropFilter: "blur(16px)",
           // height: "100%",
+          boxShadow: "0 4px 30px rgb(0, 0, 0)",
         },
       }}
     >

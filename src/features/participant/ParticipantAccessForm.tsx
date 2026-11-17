@@ -63,10 +63,10 @@ export function ParticipantAccessForm({
       onSubmit={submit}
       noValidate
       sx={{
-        height: { md: "36.5rem", lg: "36.4rem", xl: "49.9rem" },
+        height: { md: "36.5rem", lg: "33rem", xl: "44rem" },
         borderRadius: "12px",
         overflowY: "auto",
-        background: "rgba(250, 250, 250, 0.71)",
+        background: "rgb(255, 250, 250)",
         border: "1px solid rgba(250, 250, 250,1)",
         p: 2,
         width: "40rem",
@@ -75,13 +75,14 @@ export function ParticipantAccessForm({
         justifyContent: "space-between",
       }}
     >
-      <Box>
+      <Box sx={{}}>
         <Typography color="text.secondary" sx={{ color: "black" }}>
           Tu nombre se mantendrá privado hasta que se publique el resultado
           final.
         </Typography>
         {error === null ? null : <Alert severity="error">{error}</Alert>}
         <TextField
+          sx={{ mt: 3 }}
           label="Código de sesión"
           value={publicCode}
           onChange={(event) => setPublicCode(event.target.value)}
@@ -96,6 +97,7 @@ export function ParticipantAccessForm({
           fullWidth
         />
         <TextField
+          sx={{ mt: 3 }}
           label="Clave personal"
           type="password"
           value={token}
@@ -110,6 +112,7 @@ export function ParticipantAccessForm({
           fullWidth
         />
         <TextField
+          sx={{ mt: 3 }}
           label="Tu nombre real"
           value={realName}
           onChange={(event) => setRealName(event.target.value)}

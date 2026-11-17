@@ -33,10 +33,12 @@ describe('control de depuración', () => {
     const user = userEvent.setup();
     render(<RefinementControl {...props} stage="REVISION" />);
 
-    const input = screen.getByLabelText('Cantidad de finalistas (N)');
+    const input = screen.getByLabelText('Cantidad de iniciativas finalistas');
     await user.clear(input);
     await user.type(input, '2');
-    await user.click(screen.getByRole('button', { name: 'Abrir depuración' }));
+    await user.click(
+      screen.getByRole('button', { name: /abrir depuración/i }),
+    );
 
     expect(props.onOpen).toHaveBeenCalledWith(2);
   });

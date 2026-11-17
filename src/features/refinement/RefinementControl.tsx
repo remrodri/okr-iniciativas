@@ -1,18 +1,19 @@
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-import { useState } from 'react';
+import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Checkbox from "@mui/material/Checkbox";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
+import { useState } from "react";
 
-import { DomainError } from '@/domain/errors';
-import type { RefinementTie } from '@/domain/finalists';
-import { validateFinalistCount } from '@/domain/refinementPlan';
-import type { SessionStage } from '@/domain/types';
+import { DomainError } from "@/domain/errors";
+import type { RefinementTie } from "@/domain/finalists";
+import { validateFinalistCount } from "@/domain/refinementPlan";
+import type { SessionStage } from "@/domain/types";
+import { Divider } from "@mui/material";
 
 export interface RefinementControlProps {
   readonly stage: SessionStage;
@@ -57,7 +58,7 @@ export function RefinementControl({
       onOpen(count);
     } catch (caught) {
       setCountError(
-        caught instanceof DomainError ? caught.message : 'Cantidad inválida.',
+        caught instanceof DomainError ? caught.message : "Cantidad inválida.",
       );
     }
   }
@@ -70,7 +71,7 @@ export function RefinementControl({
     );
   }
 
-  if (stage === 'REVISION') {
+  if (stage === "REVISION") {
     return (
       <Paper
         variant="outlined"
@@ -79,8 +80,8 @@ export function RefinementControl({
           // height: { md: "36.5rem", lg: "36.4rem", xl: "49.9rem" },
           borderRadius: "12px",
           // overflowY: "auto",
-          background: "rgba(250, 250, 250, 0.71)",
-          border: "1px solid rgba(250, 250, 250,1)",
+          // background: "rgb(250, 250, 250)",
+          // border: "1px solid rgba(250, 250, 250,1)",
         }}
       >
         <Stack spacing={2}>
@@ -91,7 +92,7 @@ export function RefinementControl({
             Hay {availableCount} iniciativas disponibles después de la revisión.
           </Typography>
           <TextField
-            label="Cantidad de finalistas (N)"
+            label="Cantidad de iniciativas finalistas"
             type="number"
             value={count}
             onChange={(event) => setCount(Number(event.target.value))}
@@ -115,33 +116,41 @@ export function RefinementControl({
     );
   }
 
-  if (stage === 'DEPURACION') {
+  if (stage === "DEPURACION") {
     return (
-      <Paper variant="outlined" sx={{ p: 2 }}>
-        <Stack spacing={2}>
-          <Typography component="h2" variant="h2">
-            Depuración en curso
-          </Typography>
-          <Typography aria-live="polite">
-            {completeBallots} de {expectedParticipants} votos completos
-          </Typography>
-          {incomplete ? (
-            <Alert severity="warning">
-              Hay participantes sin voto completo. Puedes continuar de forma
-              explícita, descartando los envíos parciales.
-            </Alert>
-          ) : null}
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={continueIncomplete}
-                onChange={(event) =>
-                  setContinueIncomplete(event.target.checked)
-                }
-              />
-            }
-            label="Confirmo continuar con votos incompletos"
-          />
+      <Paper
+        variant="outlined"
+        sx={{ p: 2, marginTop: 2, borderRadius: "6px", height: "34.5rem" }}
+      >
+        <Stack
+          spacing={2}
+          sx={{ height: "100%", justifyContent: "space-between" }}
+        >
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Typography component="h2" variant="h2">
+              Depuración en curso
+            </Typography>
+            <Typography aria-live="polite">
+              {completeBallots} de {expectedParticipants} votos completos
+            </Typography>
+            {incomplete ? (
+              <Alert severity="warning">
+                Hay participantes sin voto completo. Puedes continuar de forma
+                explícita, descartando los envíos parciales.
+              </Alert>
+            ) : null}
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={continueIncomplete}
+                  onChange={(event) =>
+                    setContinueIncomplete(event.target.checked)
+                  }
+                />
+              }
+              label="Confirmo continuar con votos incompletos"
+            />
+          </Box>
           <Button
             variant="contained"
             disabled={incomplete && !continueIncomplete}
@@ -154,7 +163,7 @@ export function RefinementControl({
     );
   }
 
-  if (stage === 'DESEMPATE_DEPURACION' && tie !== null) {
+  if (stage === "DESEMPATE_DEPURACION" && tie !== null) {
     return (
       <Paper variant="outlined" sx={{ p: 2 }}>
         <Stack spacing={2}>
@@ -199,18 +208,31 @@ export function RefinementControl({
         p: 2,
         borderRadius: "12px",
         overflowY: "auto",
-        background: "rgba(250, 250, 250, 0.71)",
+        background: "rgb(255, 250, 250)",
         border: "1px solid rgba(250, 250, 250,1)",
-        height:"10rem"
+        // height: "10rem",
       }}
     >
-      <Stack spacing={1}>
+      <Stack spacing={1} sx={{}}>
         <Typography component="h2" variant="h2">
           {finalistIds.length} iniciativas finalistas
         </Typography>
-        <Box component="ol" sx={{ m: 0, pl: 2 }}>
+        <Divider/>
+        <Box
+          component="ol"
+          sx={{ m: 0, pl: 2, display: "flex", flexDirection: "column", gap: 2 }}
+        >
           {finalistIds.map((id) => (
-            <Typography component="li" key={id}>
+            <Typography
+              component="li"
+              key={id}
+              sx={{
+                // border: "1px solid rgb(85, 85, 85)",
+                background:"rgb(216, 216, 216)",
+                borderRadius: "10px",
+                p: 1,
+              }}
+            >
               {initiativeTexts[id] ?? id}
             </Typography>
           ))}

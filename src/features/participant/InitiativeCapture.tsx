@@ -64,7 +64,9 @@ export function InitiativeCapture({
     return (
       <Stack spacing={2}>
         <Alert severity="success">Envío confirmado</Alert>
-        <Typography>
+        <Typography
+          sx={{ background: "rgba(255, 250, 250, 0.93)", color: "black",p:1,borderRadius:"10px" }}
+        >
           Tus {count} iniciativas fueron recibidas. Ya no puedes modificarlas.
         </Typography>
         {clarifications.length === 0 ? null : (
@@ -129,7 +131,7 @@ export function InitiativeCapture({
           // height: { md: "36.5rem", lg: "36.4rem", xl: "49.9rem" },
           borderRadius: "12px",
           overflowY: "auto",
-          background: "rgba(250, 250, 250, 0.71)",
+          background: "rgb(255, 250, 250)",
           border: "1px solid rgba(250, 250, 250,1)",
           p: 2,
           color: "black",
@@ -143,7 +145,17 @@ export function InitiativeCapture({
         </Typography>
         <Box component="ol" sx={{ m: 0, pl: 3 }}>
           {drafts.map((draft, index) => (
-            <Typography component="li" key={index} sx={{ mb: 1 }}>
+            <Typography
+              component="li"
+              key={index}
+              sx={{
+                mb: 1,
+                // border: "1px solid rgba(68, 68, 68, 0.9)",
+                p: 1,
+                borderRadius: "10px",
+                background: "rgba(197, 197, 197, 0.54)",
+              }}
+            >
               {draft.trim()}
             </Typography>
           ))}
@@ -170,7 +182,7 @@ export function InitiativeCapture({
         // height: { md: "36.5rem", lg: "36.4rem", xl: "49.9rem" },
         borderRadius: "12px",
         overflowY: "auto",
-        background: "rgba(250, 250, 250, 0.71)",
+        background: "rgb(255, 250, 250)",
         border: "1px solid rgba(250, 250, 250,1)",
         padding: 2,
         color: "black",

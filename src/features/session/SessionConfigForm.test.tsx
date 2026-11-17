@@ -39,7 +39,7 @@ describe('formulario de configuración', () => {
   it('impide crear con campos obligatorios vacíos', async () => {
     const { onSubmit, user } = setup();
 
-    await user.click(screen.getByRole('button', { name: 'Crear sesión' }));
+    await user.click(screen.getByRole('button', { name: /crear sesión/i }));
 
     expect(
       screen.getByText('El campo X0 debe tener entre 1 y 1000 caracteres.'),
@@ -60,7 +60,7 @@ describe('formulario de configuración', () => {
       '11',
     );
 
-    await user.click(screen.getByRole('button', { name: 'Crear sesión' }));
+    await user.click(screen.getByRole('button', { name: /crear sesión/i }));
 
     expect(
       screen.getByText(
@@ -81,7 +81,7 @@ describe('formulario de configuración', () => {
       screen.getByLabelText('Iniciativas por participante'),
     );
     await user.type(screen.getByLabelText('Iniciativas por participante'), '2');
-    await user.click(screen.getByRole('button', { name: 'Crear sesión' }));
+    await user.click(screen.getByRole('button', { name: /crear sesión/i }));
 
     expect(onSubmit).toHaveBeenCalledWith({
       x0: 'Situación inicial',

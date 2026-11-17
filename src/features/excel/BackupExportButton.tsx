@@ -1,11 +1,18 @@
-import { Alert, Box, Button, LinearProgress, Stack, Typography } from '@mui/material';
-import { useState } from 'react';
+import {
+  Alert,
+  Box,
+  Button,
+  LinearProgress,
+  Stack,
+  Typography,
+} from "@mui/material";
+import { useState } from "react";
 
-import type { SessionSnapshot } from '@/domain/ports';
+import type { SessionSnapshot } from "@/domain/ports";
 import {
   downloadBackupWorkbook,
   exportBackupWorkbook,
-} from '@/infrastructure/workbook/backupExport';
+} from "@/infrastructure/workbook/backupExport";
 
 type Exporter = (
   snapshot: SessionSnapshot,
@@ -27,40 +34,47 @@ export function BackupExportButton({
   download = downloadBackupWorkbook,
 }: BackupExportButtonProps) {
   const [progress, setProgress] = useState<number | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleExport = async () => {
     setProgress(0);
-    setMessage(null);
     setError(null);
     try {
       const bytes = await exporter(snapshot, setProgress);
       download(bytes, snapshot.sessionId);
-      setMessage('Respaldo descargado.');
     } catch {
-      setError('No se pudo generar el respaldo. Inténtalo nuevamente.');
+      setError("No se pudo generar el respaldo. Inténtalo nuevamente.");
     } finally {
       setProgress(null);
     }
   };
 
   return (
-    <Stack spacing={1.5} sx={{ alignItems: 'flex-start' }}>
-      <Button
-        variant="contained"
-        onClick={() => void handleExport()}
-        disabled={progress !== null}
-      >
-        Exportar respaldo
-      </Button>
-      {progress !== null && (
-        <Box sx={{ width: '100%', maxWidth: 420 }} aria-live="polite">
-          <Typography variant="body2">Generando respaldo: {progress} %</Typography>
-          <LinearProgress variant="determinate" value={progress} />
-        </Box>
-      )}
-      {message !== null && <Alert severity="success">{message}</Alert>}
+    <Stack
+      spacing={1.5}
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 3,
+        width:"100%"
+      }}
+    >
+        <Button
+          variant="contained"
+          onClick={() => void handleExport()}
+          disabled={progress !== null}
+          // sx={{width:"100%"}}
+        >
+          Exportar respaldo
+        </Button>
+        {progress !== null && (
+          <Box sx={{ width: "100%", maxWidth: 420 }} aria-live="polite">
+            <Typography variant="body2">
+              Generando respaldo: {progress} %
+            </Typography>
+            <LinearProgress variant="determinate" value={progress} />
+          </Box>
+        )}
       {error !== null && <Alert severity="error">{error}</Alert>}
     </Stack>
   );

@@ -52,8 +52,12 @@ export function FacilitatorPanel({
       sx={{
         // flexGrow: 1,
         // height: "100%",
+        // height: { md: "36.5rem", lg: "36.4rem", xl: "49.9rem" },
         overflowY: "auto",
         // background: "rgba(0, 255, 0, 0.48)"
+        boxShadow: "0 4px 30px rgb(0, 0, 0)",
+        borderRadius: "12px",
+        p: 2,
       }}
     >
       {section === "ACCESS" ? (
@@ -61,24 +65,28 @@ export function FacilitatorPanel({
           variant="outlined"
           sx={{
             p: 2,
-            height: { md: "36.5rem", lg: "36.4rem", xl: "49.9rem" },
+            height: { md: "34.4rem", lg: "34.5rem", xl: "49.9rem" },
             borderRadius: "12px",
             overflowY: "auto",
-            background: "rgba(250, 250, 250, 0.71)",
+            background: "rgb(255, 250, 250)",
             border: "1px solid rgba(250, 250, 250,1)",
+            display: "flex",
+            // boxShadow: "0 4px 30px rgb(0, 0, 0)",
           }}
         >
-          <Stack spacing={2}>
+          <Stack spacing={2} sx={{ flexGrow: 1, width: "100%" }}>
             <Typography component="h2" variant="h2">
               Acceso de participantes
             </Typography>
             <Box
               sx={{
+                flexGrow: 1,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
                 textAlign: "center",
+                gap: 4,
               }}
             >
               <Typography variant="h2" component="p" sx={{ letterSpacing: 4 }}>
@@ -101,11 +109,12 @@ export function FacilitatorPanel({
           variant="outlined"
           sx={{
             p: 2,
-            height: { md: "36.5rem", lg: "36.4rem", xl: "49.9rem" },
+            height: { md: "34.4rem", lg: "34.5rem", xl: "49.9rem" },
             overflowY: "auto",
-            background: "rgba(255, 255, 255, 0.71)",
+            background: "rgb(255, 250, 250)",
             borderRadius: "12px",
-            border: "1px solid rgba(250, 250, 250,1)",
+            border: "1px solid rgba(255, 250, 250,1)",
+            // boxShadow: "0 4px 30px rgb(0, 0, 0)",
           }}
         >
           <Stack spacing={2}>
@@ -119,7 +128,18 @@ export function FacilitatorPanel({
             {participantCredentials.map((credential) => {
               const personalLink = `${participantLink}/${credential.token}`;
               return (
-                <Box key={credential.participantId}>
+                <Box
+                  key={credential.participantId}
+                  sx={{
+                    background: "rgba(121, 121, 121, 0.4)",
+                    padding: 2,
+                    borderRadius: "12px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
                   <Typography sx={{ fontWeight: 600 }}>
                     {credential.alias}
                   </Typography>
@@ -129,10 +149,18 @@ export function FacilitatorPanel({
                   >
                     {credential.token}
                   </Typography>
-                  <QrCode
-                    value={personalLink}
-                    label={`QR personal de ${credential.alias}`}
-                  />
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                    }}
+                  >
+                    <QrCode
+                      value={personalLink}
+                      label={`QR personal de ${credential.alias}`}
+                    />
+                  </Box>
                 </Box>
               );
             })}
@@ -145,35 +173,70 @@ export function FacilitatorPanel({
           variant="outlined"
           sx={{
             p: 2,
-            height: { md: "36.5rem", lg: "36.4rem", xl: "49.9rem" },
+            height: { md: "34.4rem", lg: "34.5rem", xl: "49.9rem" },
             borderRadius: "12px",
             overflowY: "auto",
-            background: "rgba(250, 250, 250, 0.71)",
-            border: "1px solid rgba(250, 250, 250,1)",
+            background: "rgb(255, 250, 250)",
+            border: "1px solid rgba(255, 250, 250,1)",
           }}
         >
           <Stack spacing={1}>
             <Typography component="h2" variant="h2">
               Participantes
             </Typography>
+            <Typography>
+              Consulta el estado de conexión y el avance de cada participante.
+              Antes de continuar a la siguiente etapa, verifica quiénes
+              completaron y enviaron su actividad.
+            </Typography>
+            <Divider />
             {data.participants.map((participant) => (
               <Box
                 key={participant.participantId}
                 sx={{
                   display: "flex",
-                  flexWrap: "wrap",
-                  gap: 1,
+                  // flexWrap: "wrap",
+                  // gap: 1,
                   alignItems: "center",
-                  justifyContent: "space-between",
+                  // justifyContent: "space-between",
+                  // px: 2,
+                  // background: "rgba(121, 121, 121, 0.4)",
+                  borderRadius: "12px",
+                  border: "1px solid rgba(121, 121, 121, 0.4)",
+                  py: 1,
                 }}
               >
-                <Typography>{participant.alias}</Typography>
-                <Chip
-                  size="small"
-                  label={participant.connected ? "Conectado" : "Desconectado"}
-                  color={participant.connected ? "success" : "default"}
-                />
-                <Typography variant="body2" color="text.secondary">
+                <Typography
+                  sx={{
+                    width: "34%",
+                    display: "flex",
+                    justifyContent: "center",
+                  }}
+                >
+                  {participant.alias}
+                </Typography>
+                <Box
+                  sx={{
+                    width: "33%",
+                    display: "flex",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Chip
+                    size="small"
+                    label={participant.connected ? "Conectado" : "Desconectado"}
+                    color={participant.connected ? "success" : "default"}
+                  />
+                </Box>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    width: "33%",
+                    display: "flex",
+                    justifyContent: "center",
+                  }}
+                >
                   {progressLabel(participant.progress)}
                 </Typography>
               </Box>
@@ -187,11 +250,12 @@ export function FacilitatorPanel({
           variant="outlined"
           sx={{
             p: 2,
-            height: { md: "36.5rem", lg: "36.4rem", xl: "49.9rem" },
+            height: { md: "34.4rem", lg: "34.5rem", xl: "49.9rem" },
             borderRadius: "12px",
             overflowY: "auto",
-            background: "rgba(250, 250, 250, 0.71)",
+            background: "rgb(255, 250, 250)",
             border: "1px solid rgba(250, 250, 250,1)",
+            display: "flex",
           }}
         >
           <Stack spacing={2}>
@@ -203,15 +267,32 @@ export function FacilitatorPanel({
               participantes.
             </Typography>
             <Divider />
-            <Typography
-              sx={{ fontFamily: "monospace", wordBreak: "break-all" }}
+            <Box
+              sx={{
+                flexGrow: 1,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "2rem",
+                // background: "black",
+                // height: {
+                //   md: "24.5rem",
+                //   lg: "24.5rem",
+                //   xl:"37.8rem"
+                // },
+              }}
             >
-              {facilitatorToken}
-            </Typography>
-            <QrCode
-              value={facilitatorToken}
-              label="QR privado de recuperación"
-            />
+              <Typography
+                sx={{ fontFamily: "monospace", wordBreak: "break-all" }}
+              >
+                {facilitatorToken}
+              </Typography>
+              <QrCode
+                value={facilitatorToken}
+                label="QR privado de recuperación"
+              />
+            </Box>
           </Stack>
         </Paper>
       ) : null}

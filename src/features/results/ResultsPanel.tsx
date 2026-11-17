@@ -1,11 +1,12 @@
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Chip from "@mui/material/Chip";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 
-import type { RankingEntry, SessionStage } from '@/domain/types';
+import type { RankingEntry, SessionStage } from "@/domain/types";
+import { Divider } from "@mui/material";
 
 export interface ResultAuthor {
   readonly initiativeId: string;
@@ -24,7 +25,7 @@ export interface ResultsPanelProps {
 }
 
 function formatNumber(value: number): string {
-  return value.toFixed(2).replace('.', ',');
+  return value.toFixed(2).replace(".", ",");
 }
 
 function formatExpiration(value: string): string {
@@ -32,9 +33,9 @@ function formatExpiration(value: string): string {
   if (Number.isNaN(date.getTime())) {
     return value;
   }
-  return new Intl.DateTimeFormat('es-ES', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
+  return new Intl.DateTimeFormat("es-ES", {
+    dateStyle: "medium",
+    timeStyle: "short",
   }).format(date);
 }
 
@@ -48,7 +49,7 @@ export function ResultsPanel({
   onFinalize,
   onReopen,
 }: ResultsPanelProps) {
-  const revealed = stage === 'RESULTADO_FINAL' || stage === 'FINALIZADA';
+  const revealed = stage === "RESULTADO_FINAL" || stage === "FINALIZADA";
   const positionCounts = new Map<number, number>();
   for (const entry of ranking) {
     positionCounts.set(
@@ -63,67 +64,88 @@ export function ResultsPanel({
       sx={{
         p: 2,
         borderRadius: "12px",
-        overflowY: "auto",
-        background: "rgba(250, 250, 250, 0.71)",
-        border: "1px solid rgba(250, 250, 250,1)",
-        height:{lg:"31rem", xl:"45rem"}
+        // overflowY: "auto",
+        background: "rgb(255, 250, 250)",
+        border: "1px solid rgb(255, 255, 255)",
+        // height: { lg: "31rem", xl: "45rem" },
+        mt:2
       }}
     >
-      <Stack spacing={2}>
+      <Stack spacing={2} >
         <Typography component="h2" variant="h2">
           {stage === "FINALIZADA" ? "Sesión finalizada" : "Resultado final"}
         </Typography>
 
         {ranking.length === 0 ? (
-          <Typography color="text.secondary">
-            Aún no hay ranking publicado.
-          </Typography>
-        ) : (
-          <Box component="ol" sx={{ listStyle: "none", m: 0, p: 0 }}>
-            <Stack spacing={2}>
-              {ranking.map((entry) => {
-                const tied = (positionCounts.get(entry.position) ?? 0) > 1;
-                const entryAuthors = authors.find(
-                  (item) => item.initiativeId === entry.initiativeId,
-                );
-                return (
-                  <Box component="li" key={entry.initiativeId}>
-                    <Stack spacing={1}>
-                      <Stack
-                        direction="row"
-                        spacing={1}
-                        sx={{ alignItems: "center", flexWrap: "wrap" }}
-                      >
-                        <Typography component="span" sx={{ fontWeight: 600 }}>
-                          Puesto {entry.position}
-                        </Typography>
-                        {tied ? <Chip size="small" label="Empate" /> : null}
-                        <Typography component="span">
-                          {initiativeTexts[entry.initiativeId] ??
-                            entry.initiativeId}
-                        </Typography>
-                      </Stack>
-                      <Typography variant="body2" color="text.secondary">
-                        Impacto {formatNumber(entry.impactMedian)} · Confianza{" "}
-                        {formatNumber(entry.confidenceMedian)} · Facilidad{" "}
-                        {formatNumber(entry.easeMedian)}
-                      </Typography>
-                      <Typography>
-                        Puntuación {formatNumber(entry.score)}
-                      </Typography>
-                      {revealed &&
-                      entryAuthors !== undefined &&
-                      entryAuthors.names.length > 0 ? (
-                        <Typography variant="body2">
-                          Autoría: {entryAuthors.names.join(", ")}
-                        </Typography>
-                      ) : null}
-                    </Stack>
-                  </Box>
-                );
-              })}
-            </Stack>
+          <Box>
+            <Typography color="text.secondary">
+              Aún no hay ranking publicado.
+            </Typography>
+            <Divider />
           </Box>
+        ) : (
+          <>
+            <Typography>
+              Revisa el ranking final de las iniciativas priorizadas según el
+              método ICE seleccionado. Los resultados muestran las medianas de
+              Impacto, Confianza y Facilidad, junto con la puntuación obtenida
+              por cada iniciativa.
+              </Typography>
+              <Divider/>
+            <Box component="ol" sx={{ listStyle: "none", m: 0, p: 0 }}>
+              <Stack spacing={2}>
+                {ranking.map((entry) => {
+                  const tied = (positionCounts.get(entry.position) ?? 0) > 1;
+                  const entryAuthors = authors.find(
+                    (item) => item.initiativeId === entry.initiativeId,
+                  );
+                  return (
+                    <Box
+                      component="li"
+                      key={entry.initiativeId}
+                      sx={{
+                        background: "rgb(226, 226, 226)",
+                        p: 2,
+                        borderRadius: "10px",
+                      }}
+                    >
+                      <Stack spacing={1}>
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                          sx={{ alignItems: "center", flexWrap: "wrap" }}
+                        >
+                          <Typography component="span" sx={{ fontWeight: 600 }}>
+                            Puesto {entry.position}
+                          </Typography>
+                          {tied ? <Chip size="small" label="Empate" /> : null}
+                          <Typography component="span">
+                            {initiativeTexts[entry.initiativeId] ??
+                              entry.initiativeId}
+                          </Typography>
+                        </Stack>
+                        <Typography variant="body2" color="text.secondary">
+                          Impacto {formatNumber(entry.impactMedian)} · Confianza{" "}
+                          {formatNumber(entry.confidenceMedian)} · Facilidad{" "}
+                          {formatNumber(entry.easeMedian)}
+                        </Typography>
+                        <Typography>
+                          Puntuación {formatNumber(entry.score)}
+                        </Typography>
+                        {revealed &&
+                        entryAuthors !== undefined &&
+                        entryAuthors.names.length > 0 ? (
+                          <Typography variant="body2">
+                            Autoría: {entryAuthors.names.join(", ")}
+                          </Typography>
+                        ) : null}
+                      </Stack>
+                    </Box>
+                  );
+                })}
+              </Stack>
+            </Box>
+          </>
         )}
 
         {stage === "EVALUACION_ICE" ? (

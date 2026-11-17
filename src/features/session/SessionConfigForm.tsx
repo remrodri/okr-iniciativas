@@ -11,6 +11,7 @@ import {
   validateSessionConfig,
   type SessionConfig,
 } from '@/domain/sessionConfig';
+import AddBoxIcon from "@mui/icons-material/AddBox";
 
 export interface SessionConfigFormProps {
   readonly onSubmit: (config: SessionConfig) => void;
@@ -135,7 +136,8 @@ export function SessionConfigForm({ onSubmit }: SessionConfigFormProps) {
       </Typography>
       {error === null ? null : <Alert severity="error">{error.message}</Alert>}
       <Button type="submit" variant="contained">
-        Crear sesión
+        <AddBoxIcon sx={{ mr: 1 }} />
+        CREAR SESIÓN
       </Button>
     </Stack>
   );

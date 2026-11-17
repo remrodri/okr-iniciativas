@@ -7,7 +7,7 @@ import { ParticipantSyncStatus } from './ParticipantSyncStatus';
 afterEach(cleanup);
 
 describe('estado de sincronización del participante', () => {
-  it('distingue un borrador sin conexión de un envío confirmado', () => {
+  it('distingue un borrador sin conexión de una sincronización confirmada', () => {
     const { rerender } = render(
       <ParticipantSyncStatus
         online={false}
@@ -30,7 +30,7 @@ describe('estado de sincronización del participante', () => {
         onRetry={vi.fn()}
       />,
     );
-    expect(screen.getByText(/confirmado por firebase/i)).toBeInTheDocument();
+    expect(screen.queryByText(/confirmado por firebase/i)).not.toBeInTheDocument();
   });
 
   it('muestra enviando y permite reintentar un error', async () => {

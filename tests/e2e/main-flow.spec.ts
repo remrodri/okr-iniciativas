@@ -59,7 +59,7 @@ test('flujo 6×5 → 15 → desempate → ICE → ranking', async ({ page, brows
   await expect(
     page.getByText('Hay 30 iniciativas disponibles después de la revisión.'),
   ).toBeVisible({ timeout: 30_000 });
-  await page.getByLabel('Cantidad de finalistas (N)').fill('15');
+  await page.getByLabel('Cantidad de iniciativas finalistas').fill('15');
   await page.getByRole('button', { name: 'Abrir depuración' }).click();
 
   await Promise.all(participants.map(async (participant, index) => {

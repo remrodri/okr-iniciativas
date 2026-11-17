@@ -46,9 +46,9 @@ export function AppRouter() {
           color="transparent"
           elevation={0}
           sx={{
-            background: "rgba(0, 0, 0, 0.48)",
+            // background: "rgba(0, 0, 0, 0.48)",
             borderRadius: "12px",
-            boxShadow: "0 4px 30px rgba(0, 0, 0, 0.6)",
+            boxShadow: "0 4px 30px rgb(0, 0, 0)",
             backdropFilter: "blur(10px)",
             WebkitBackdropFilter: "blur(10px)",
             border: "1px solid rgba(0, 0, 0, 0.4)",
@@ -60,19 +60,25 @@ export function AppRouter() {
               component={RouterLink}
               to="/"
               variant="subtitle1"
-              sx={{ color: "inherit", fontWeight: 700, textDecoration: "none" }}
+              sx={{
+                color: "inherit",
+                fontWeight: 700,
+                textDecoration: "none",
+                fontSize: { xs: "1rem", sm: "1.2rem", md: "1.8rem" },
+              }}
             >
               {APP_NAME}
             </Typography>
           </Toolbar>
         </AppBar>
-        <Box component="main"
+        <Box
+          component="main"
           sx={{
-          display: "flex",
-          flexDirection: "column",
-          flexGrow: 1,
+            display: "flex",
+            flexDirection: "column",
+            flexGrow: 1,
             gap: "1rem",
-        }}
+          }}
         >
           <Routes>
             <Route path="/" element={<HomePage />} />
